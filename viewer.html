@@ -97,15 +97,6 @@
   .zitplaats { position: absolute; left: var(--x); top: var(--y); translate: -50% -100%; width: 8.5%; text-align: center; color: var(--rolkleur); }
   .sprite { position: relative; display: block; aspect-ratio: .5; background: url(council-cast.png) var(--frame) 50% / 400% 100% no-repeat; image-rendering: pixelated; }
   .zitplaats.spreekt { z-index: 2; }
-  .handgebaar {
-    position: absolute; left: 2%; top: 27%; width: 29%; height: 32%;
-    background: linear-gradient(#31231d 0 16%, #f5c395 16% 39%, #31231d 39% 45%, var(--rolkleur) 45% 100%);
-    clip-path: polygon(8% 0, 53% 0, 53% 16%, 72% 16%, 72% 34%, 64% 34%, 64% 49%, 77% 49%, 77% 72%, 100% 72%, 100% 100%, 62% 100%, 62% 87%, 39% 87%, 39% 66%, 24% 66%, 24% 40%, 0 40%, 0 12%, 8% 12%);
-    filter: brightness(.78); opacity: 0; transform: translate(29%, 45%) rotate(20deg);
-    transform-origin: 90% 90%; transition: opacity 120ms, transform 210ms ease-out;
-    pointer-events: none;
-  }
-  .spreekt .handgebaar { opacity: 1; transform: translate(0, 0) rotate(-13deg); }
   .spreekwolk {
     position: absolute; z-index: 4; left: 50%; bottom: 91%; translate: -50% 0;
     width: clamp(130px, 20vw, 240px); padding: 8px 11px; background: #fff0cf; color: #28202a;
@@ -126,12 +117,12 @@
     position: absolute; z-index: 5; left: 22%; top: 58%; width: 56%; height: 15%; min-height: 13px;
     rotate: -12deg; border: 2px solid #754519; border-radius: 3px; padding: 0;
     background: linear-gradient(#ffefba, #e2ab5d 48%, #ae6838 56%, #e6b06d 68%, #b47a44);
-    box-shadow: 0 0 0 1px #fff1ac, 0 0 14px 5px #ffca69a6;
+    box-shadow: 0 0 0 2px #fff2b0, 0 0 12px 3px #ffda83, 0 0 31px 12px #ffc14c91;
     animation: rolgloed 2.5s ease-in-out infinite;
   }
   .koningsrol::before, .koningsrol::after { clip-path: none; inset: 0 39%; background: #9c3c36; }
   .koningsrol::after { inset: 26% 38%; background: #bd5847; box-shadow: 0 1px #73301f; }
-  .koningsrol:hover { box-shadow: 0 0 0 2px #fff1ac, 0 0 22px 9px #ffca69; }
+  .koningsrol:hover { box-shadow: 0 0 0 3px #fff6cc, 0 0 16px 5px #ffe199, 0 0 38px 15px #ffc453bd; }
   .koningsrol:hover::after { background: #e87d62; }
   .rol-greep::before, .rol-greep::after {
     content: ""; position: absolute; top: 40%; width: 19%; height: 74%;
@@ -140,19 +131,27 @@
   }
   .rol-greep::before { left: -7%; }
   .rol-greep::after { right: -7%; scale: -1 1; }
-  @keyframes rolgloed { 50% { box-shadow: 0 0 0 2px #fff1ac, 0 0 21px 6px #ffca69bf; } }
-  .perkament {
-    width: min(680px, calc(100% - 28px)); max-height: 87svh;
-    border: 4px solid #7e4b2a; border-block: 12px ridge #926039;
-    border-radius: 3px; color: #40261a;
-    background: radial-gradient(ellipse at 48% 24%, #fff0ce99, transparent 65%),
-      linear-gradient(90deg, #d2a369 0%, #efce96 8%, #f6dfad 50%, #e6be82 92%, #c7945b 100%);
-    box-shadow: 0 10px 35px #090604d9, inset 0 0 28px #92552c47;
-    padding: clamp(14px, 4vw, 33px);
+  @keyframes rolgloed {
+    50% { box-shadow: 0 0 0 3px #fff6cc, 0 0 18px 6px #ffe199, 0 0 43px 16px #ffc453ba; }
   }
-  .perkament[open] { animation: ontvouw 750ms cubic-bezier(.19,.75,.3,1) both; }
+  .perkament {
+    width: min(950px, calc(100% - 24px)); height: min(84svh, 650px); max-height: none;
+    border: 0; color: #40261a; color-scheme: light; overflow: hidden;
+    background: transparent; isolation: isolate;
+    padding: clamp(55px, 10svh, 94px) clamp(28px, 8vw, 99px) clamp(45px, 9svh, 88px);
+    filter: drop-shadow(0 10px 24px #090604bf);
+  }
+  .perkament::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: url(verdict-parchment.png) center / 100% 100% no-repeat;
+    clip-path: polygon(2.1% 2.8%, 97.9% 2.8%, 99% 5%, 99% 11%, 97.3% 13%, 97.3% 30%,
+      98% 48%, 97.3% 64%, 97.7% 87%, 99% 89%, 99% 96%, 97.5% 98%, 2.1% 98%,
+      1% 95%, 1% 89%, 2.2% 87%, 2.5% 68%, 2% 53%, 2.5% 39%, 2.3% 13%, 1% 11%, 1% 5%);
+  }
+  .perkament[open] { display: flex; flex-direction: column; animation: ontvouw 750ms cubic-bezier(.19,.75,.3,1) both; }
+  .roltekst { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-color: #8c643a transparent; padding-right: 6px; }
   .perkament::backdrop { background: #100906b8; }
-  .perkamentkop { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid #a66c4066; padding-bottom: 13px; margin-bottom: 15px; }
+  .perkamentkop { flex: none; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid #a66c4066; padding-bottom: 13px; margin-bottom: 15px; }
   .perkamentkop h2 { margin: 0; font: 700 clamp(24px, 5vw, 39px)/1 var(--pixel); }
   .perkament .slot { margin: 0 0 15px; font-size: 15px; }
   .perkament .slot b { color: #694028; }
@@ -174,10 +173,10 @@
   @media (max-width: 720px) {
     main { grid-template-columns: minmax(0, 1fr); }
     .naamplaat { padding-inline: 2px; }
+    .perkament { padding-inline: clamp(25px, 7.5vw, 58px); }
   }
   @media (prefers-reduced-motion: reduce) {
     .sprite, .spreekwolk, .koningsrol, .perkament, .vlam, .torengloed, .torenring, .denkt { animation: none !important; }
-    .handgebaar { transition: none; }
     .vlam, .torengloed { opacity: .3; }
     .torenring { display: none; }
   }
@@ -238,10 +237,10 @@
       <span class="vlam" style="--licht-x:95.6%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-2s"></span>
     </div>
     <ul class="raadskaart" aria-label="Zitplaatsen van de Raad">
-      <li class="zitplaats" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:28%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Beast Master</span></li>
-      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Engineer</span></li>
-      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Koning</span><button id="open-verdictrol" class="koningsrol" type="button" aria-haspopup="dialog" aria-label="Open de verdictrol" title="Open de verdictrol" hidden><span class="rol-greep" aria-hidden="true"></span></button></li>
-      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Oracle</span></li>
+      <li class="zitplaats" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:28%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Beast Master</span></li>
+      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Engineer</span></li>
+      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Koning</span><button id="open-verdictrol" class="koningsrol" type="button" aria-haspopup="dialog" aria-label="Open de verdictrol" title="Open de verdictrol" hidden><span class="rol-greep" aria-hidden="true"></span></button></li>
+      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Oracle</span></li>
     </ul>
   </div>
 </figure>
@@ -255,7 +254,7 @@
     <h2 id="verdictrol-titel">Oordeel van de Raad</h2>
     <form method="dialog"><button type="submit" autofocus>Sluiten</button></form>
   </div>
-  <div id="rol-inhoud"></div>
+  <div id="rol-inhoud" class="roltekst" tabindex="0"></div>
 </dialog>
 <dialog id="dossier" class="dossier" aria-labelledby="dossier-titel">
   <div class="dossierkop">
