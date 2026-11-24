@@ -7,7 +7,7 @@
 <style>
   @font-face {
     font-family: "Pixelify Sans";
-    src: url("pixelify-sans.ttf") format("truetype");
+    src: url("assets/pixelify-sans.ttf") format("truetype");
     font-style: normal;
     font-weight: 400 700;
     font-display: swap;
@@ -31,9 +31,6 @@
       #171e29;
   }
   header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 28px 0 18px; }
-  .titelgroep { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 17px; }
-  .team { margin: 0; font-size: 12px; color: #c8cad3; }
-  .team b { color: #f4ce79; font-weight: 600; }
   .bediening { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   button {
     --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
@@ -48,9 +45,9 @@
   .dossier { position: fixed; inset: 0 0 0 auto; margin: 0; height: 100%; max-height: none; width: min(850px, 100%); max-width: none; border: 0; border-left: 1px solid var(--lijn); color: var(--tekst); background: var(--bg); padding: 0 18px 18px; overflow: auto; }
   .dossier::backdrop { background: #080a0bb3; }
   .dossierkop { position: sticky; top: 0; display: flex; gap: 12px; align-items: center; justify-content: space-between; background: var(--bg); border-bottom: 1px solid var(--lijn); padding: 14px 0 10px; margin-bottom: 12px; z-index: 1; }
-  .dossierkop h2 { font: 600 24px Georgia, serif; margin: 0; }
+  .dossierkop h2 { font: 600 24px var(--pixel); margin: 0; }
   header h1 { font: 700 clamp(30px, 4.7vw, 48px)/1 var(--pixel); margin: 0; text-shadow: 2px 3px #080a11; }
-  .pil { font-size: 13px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--lijn); background: var(--paneel); }
+  .pil { font: 600 15px/1.25 var(--pixel); padding: 2px 10px; border-radius: 999px; border: 1px solid var(--lijn); background: var(--paneel); }
   .pil.bezig { border-color: var(--waarschuwing); color: var(--waarschuwing); }
   .pil.klaar { border-color: var(--ok); color: var(--ok); }
   .runid { color: var(--zacht); font-size: 12px; font-family: ui-monospace, monospace; word-break: break-all; }
@@ -166,7 +163,7 @@
   #kamer-vraag:not(:empty) { margin-top: 4px; }
   #kamer-reden:not(:empty) { margin-top: 4px; font-size: 13px; color: var(--zacht); }
   main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 32%); gap: 18px; }
-  .debatkop { margin: 0 0 7px; font: 600 23px Georgia, serif; }
+  .debatkop { margin: 0 0 7px; font: 600 23px var(--pixel); }
   #debat { max-height: 68vh; overflow: auto; overscroll-behavior: contain; }
   #debat .ronde:first-child { margin-top: 0; }
   aside .runid { margin: 0 0 10px; }
@@ -213,12 +210,9 @@
 <body>
 <div class="pagina">
 <header>
-  <div class="titelgroep">
-    <h1>Council of Achrona</h1>
-    <p class="team">Mykyta Nabokov &amp; Dmytro Busha · <b>Team Vuren</b></p>
-  </div>
+  <h1>Council of Achrona</h1>
   <div class="bediening">
-    <span id="status" class="pil">Wacht op debat</span>
+    <span id="status" class="pil" translate="no">Wachten</span>
     <button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>
   </div>
 </header>
@@ -394,7 +388,7 @@ function render(trace, verdict) {
   const status = document.getElementById("status");
   const bezig = trace.status === "bezig";
   status.className = "pil " + (bezig ? "bezig" : "klaar");
-  status.textContent = bezig ? "Debat bezig" : "Debat afgerond";
+  status.textContent = bezig ? "Bezig" : "Afgerond";
   document.getElementById("runid").textContent = trace.run_id || "";
 
   // Debat per ronde

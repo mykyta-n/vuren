@@ -25,8 +25,8 @@ def main():
                 return self.stuur(ROOT / "viewer.html", "text/html; charset=utf-8")
             if pad in ("/council-chamber.png", "/council-cast.png", "/verdict-parchment.png"):
                 return self.stuur(ROOT / "assets" / pad[1:], "image/png")
-            if pad == "/pixelify-sans.ttf":
-                return self.stuur(ROOT / "assets" / pad[1:], "font/ttf")
+            if pad == "/assets/pixelify-sans.ttf":
+                return self.stuur(ROOT / pad[1:], "font/ttf")
             if pad in ("/trace.json", "/verdict.json"):
                 return self.stuur(map_ / pad[1:], "application/json; charset=utf-8")
             self.send_error(404)
