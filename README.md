@@ -61,7 +61,12 @@ Maak thuis al je repo aan (stap 1–2 hieronder) en draai daarin `uv sync` (en `
 
 Geen uv? Maak een venv (`python -m venv .venv`, activeer met `.venv\Scripts\activate` op Windows of `source .venv/bin/activate`), dan `pip install -e .` en `python viewer.py`, `python council.py`, `python validate.py`.
 
-Viewer op een andere poort: zet `VIEWER_PORT=8101` als omgevingsvariabele. Een andere map bekijken, bv. het voorbeeld: `uv run viewer voorbeeld`.
+### Liveviewer en demoviewer
+
+- **Live** op [poort 8100](http://127.0.0.1:8100/). Start met `uv run viewer`. Start het debat met `uv run council` in een andere terminal. De liveviewer leest tijdens het debat de bijgewerkte bestanden. Gebruik `uv run viewer --port 8105` als 8100 bezet is.
+- **Demo** op [poort 8104](http://127.0.0.1:8104/). Start met `uv run demo-viewer /pad/naar/runmap` en geef de map met de twee bestanden van dezelfde afgeronde run. Zie [demo-viewer/VIEWER_README.md](demo-viewer/VIEWER_README.md) voor het klaarzetten van de demo.
+
+Beide viewers kunnen tegelijk draaien.
 
 ## Hoe de kit werkt
 
@@ -81,7 +86,7 @@ Viewer op een andere poort: zet `VIEWER_PORT=8101` als omgevingsvariabele. Een a
 | `verdict.py` | De Koning stelt het Verdict op uit de bijdragen van de Raadsleden. Python valideert het oordeel en de geschillen voordat ze worden opgeslagen. |
 | `raadsleden/<rol>.py` | Eén bestand per Raadslid: Rol, naam en publiek perspectief. |
 | `rolkaarten.md` | De zes Rolkaarten: perspectief, publiek Belang en soort Kennisbron per Rol. Begin hier om je Rollen te kiezen. |
-| `viewer.py` + `viewer.html` | De debatviewer (`uv run viewer`). Leest alleen `trace.json` en `verdict.json`, dus werkt ook als je een ander platform kiest. |
+| `viewer.py` + `viewer.html` | De debatviewer (`uv run viewer`). Volgt `trace.json` en `verdict.json` terwijl de Council draait. |
 | `voorbeelden/devui_debat.py` | Dezelfde Raadsleden als MAF-group chat in de DevUI van Microsoft (zie "Volgende stappen"). |
 | `kennisbronnen/` | Leeg (op een LEESMIJ na). Pak `pack.zip` uit in de root van de repo; dan staan de bronnen in `kennisbronnen/<rol>/`. Staat in `.gitignore`. |
 | `schema/` | De JSON-schema's van het Council Verdict en de Debat-trace. |

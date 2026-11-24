@@ -1,8 +1,5 @@
-"""Debatviewer: toont trace.json en verdict.json live in je browser.
-
-Start met `uv run viewer` (leest de root van deze repo) of `uv run viewer <map-of-trace.json>`.
-Poort via VIEWER_PORT (standaard 8100).
-"""
+"""Lokale live- en demoviewers voor de Raad van Achrona."""
+import argparse
 import http.server
 import os
 import sys
@@ -14,17 +11,18 @@ ASSETS = ROOT / "assets"
 MEDIA_TYPES = {".png": "image/png", ".ttf": "font/ttf"}
 
 
-def main():
-    sys.stdout.reconfigure(encoding="utf-8")
-    doel = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT
-    map_ = doel.parent if doel.is_file() else doel
-    port = int(os.getenv("VIEWER_PORT", "8100"))
+def serve(map_, port, *, demo=False):
+    mode = b"demo" if demo else b"live"
+    script = ROOT / ("demo-viewer/replay.js" if demo else "viewer-live.js")
 
     class Handler(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
             pad = self.path.split("?")[0]
             if pad in ("/", "/index.html"):
-                return self.stuur(ROOT / "viewer.html", "text/html; charset=utf-8")
+                pagina = (ROOT / "viewer.html").read_bytes().replace(b"VIEWER_MODE", mode, 1)
+                return self.stuur_data(200, pagina, "text/html; charset=utf-8")
+            if pad == "/chamber-mode.js":
+                return self.stuur(script, "text/javascript; charset=utf-8")
             if pad == "/pitch":
                 return self.stuur(ROOT / "pitch.html", "text/html; charset=utf-8")
             if pad == "/viewer.js":
@@ -41,10 +39,14 @@ def main():
             self.send_error(404)
 
         def stuur(self, bestand, soort):
-            if not bestand.exists():
+            try:
+                data = bestand.read_bytes()
+            except FileNotFoundError:
                 return self.send_error(404)
-            data = bestand.read_bytes()
-            self.send_response(200)
+            return self.stuur_data(200, data, soort)
+
+        def stuur_data(self, status, data, soort):
+            self.send_response(status)
             self.send_header("Content-Type", soort)
             self.send_header("Content-Length", str(len(data)))
             self.send_header("Cache-Control", "no-store")
@@ -54,15 +56,48 @@ def main():
         def log_message(self, *args):
             pass
 
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    url = f"http://127.0.0.1:{server.server_port}/"
-    print(f"Debatviewer op {url} (leest {map_}). Stop met Ctrl+C.")
-    webbrowser.open(url)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
+    with http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler) as server:
+        url = f"http://127.0.0.1:{server.server_port}/"
+        naam = "Demoviewer" if demo else "Liveviewer"
+        print(f"{naam} op {url} (leest {map_}). Stop met Ctrl+C.")
+        webbrowser.open(url)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Volg een live debat.")
+    parser.add_argument("map", nargs="?", type=Path, default=ROOT,
+                        help="Projectmap of pad naar trace.json")
+    parser.add_argument("--port", type=int, default=os.getenv("VIEWER_PORT", "8100"))
+    args = parser.parse_args()
+    doel = args.map.resolve()
+    map_ = doel.parent if doel.is_file() else doel
+    if not map_.is_dir():
+        parser.error(f"Map niet gevonden: {map_}")
+    serve(map_, args.port)
+
+
+def demo_main():
+    parser = argparse.ArgumentParser(description="Speel een opgeslagen debat af.")
+    parser.add_argument("map", nargs="?", type=Path, help="Map met trace.json en verdict.json")
+    parser.add_argument("--port", type=int, default=os.getenv("DEMO_VIEWER_PORT", "8104"))
+    args = parser.parse_args()
+    map_ = args.map.resolve() if args.map is not None else ROOT / "demo-viewer"
+    bestanden = ("trace.json", "verdict.json")
+    if args.map is None and not any((map_ / naam).exists() for naam in bestanden):
+        map_ = ROOT / "demo" / "pitch"
+    for naam in bestanden:
+        if not (map_ / naam).is_file():
+            parser.error(f"Bestand niet gevonden: {map_ / naam}")
+    serve(map_, args.port, demo=True)
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:2] == ["--demo"]:
+        del sys.argv[1]
+        demo_main()
+    else:
+        main()
