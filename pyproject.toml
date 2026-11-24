@@ -18,6 +18,7 @@ devui = ["agent-framework-devui>=1.0.0b261008", "agent-framework-orchestrations>
 council = "council:main"
 validate = "validate:main"
 viewer = "viewer:main"
+demo-viewer = "viewer:demo_main"
 
 [build-system]
 requires = ["setuptools>=69"]

@@ -51,6 +51,14 @@
     grid-column: 2; grid-row: 1; padding: 15px clamp(6px, 2vw, 29px) 22px; font-size: clamp(18px, 2.1vw, 23px);
   }
   .replay-status { grid-column: 1 / -1; margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--zacht); }
+
+  .zaalbediening.live { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .live .zaalacties { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px 15px; }
+  .live #start-debat { justify-self: end; font-size: 16px; }
+  .live #open-dossier { min-width: min(100%, 290px); }
+  .startmelding { margin: 0; font-size: 13px; color: var(--fout); }
+  .startmelding:empty { display: none; }
+  @media (max-width: 720px) { .live .zaalacties { display: flex; justify-content: center; flex-wrap: wrap; } }
   button {
     --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
     position: relative; isolation: isolate; cursor: pointer; border: 0; background: none; color: #fff1d9;
@@ -150,6 +158,9 @@
     font-variant-numeric: lining-nums tabular-nums;
     animation: wolk-in 180ms ease-out;
   }
+  .spreekwolk.breed { width: var(--wolkbreedte); }
+  .spreekwolk.laag { bottom: auto; top: var(--wolktop); }
+  .wolk-inhoud { max-height: var(--wolkruimte, none); overflow: auto; overscroll-behavior: contain; }
   .zijplaats.links .spreekwolk { translate: -24% 0; --staart-x: 24%; }
   .zijplaats.rechts .spreekwolk { translate: -76% 0; --staart-x: 76%; }
   .spreekwolk::after { content: ""; position: absolute; left: calc(var(--staart-x, 50%) - 6px); bottom: -7px; width: 10px; height: 10px; rotate: 45deg; border: solid #57445b; border-width: 0 2px 2px 0; background: #fff0cf; }
@@ -458,6 +469,33 @@ function spreekwolkInhoud(beurt) {
   return { tekst: inhoud, bronnen };
 }
 
+const toneel = document.querySelector(".toneel");
+const koningsplaats = toneel.querySelector('[data-rol="koning"]');
+
+function pasKoningswolk() {
+  const wolk = koningsplaats.querySelector(".spreekwolk");
+  if (!wolk) return;
+  const ruimte = koningsplaats.offsetTop - koningsplaats.offsetHeight * .91 - 8;
+  wolk.classList.remove("breed", "laag");
+  wolk.style.removeProperty("--wolkruimte");
+  if (wolk.offsetHeight > ruimte) {
+    wolk.style.setProperty("--wolkbreedte", `${Math.min(560, toneel.clientWidth - 16)}px`);
+    wolk.classList.add("breed");
+  }
+  const laag = wolk.offsetHeight > ruimte && ruimte < 76;
+  if (laag) {
+    wolk.style.setProperty("--wolktop", `${koningsplaats.offsetHeight - koningsplaats.offsetTop + 8}px`);
+    wolk.classList.add("laag");
+  }
+  const rand = wolk.offsetHeight - wolk.firstElementChild.offsetHeight;
+  const hoogte = laag ? Math.max(76, toneel.clientHeight * .42) : ruimte;
+  wolk.style.setProperty("--wolkruimte", `${Math.max(24, hoogte - rand)}px`);
+  const inhoud = wolk.firstElementChild;
+  inhoud.tabIndex = inhoud.scrollHeight > inhoud.clientHeight ? 0 : -1;
+}
+
+new ResizeObserver(pasKoningswolk).observe(toneel);
+
 function toonSpreekwolk(beurt) {
   for (const plaats of plaatsen) {
     plaats.classList.remove("spreekt");
@@ -469,11 +507,15 @@ function toonSpreekwolk(beurt) {
   if (!plek) return;
   const inhoud = spreekwolkInhoud(beurt);
   if (!inhoud) return;
-  const { tekst, bronnen } = inhoud;
+  const { tekst, bronnen } = beurt.spreker === "koning" && beurt.soort === "routering"
+    ? { tekst: beurt.vraag.trim(), bronnen: [] } : inhoud;
   const wolk = document.createElement("div");
   wolk.className = "spreekwolk";
   wolk.setAttribute("role", "status");
-  wolk.textContent = tekst;
+  const wolkInhoud = document.createElement("div");
+  wolkInhoud.className = "wolk-inhoud";
+  wolkInhoud.textContent = tekst;
+  wolk.append(wolkInhoud);
   if (bronnen.length) {
     const citaten = document.createElement("div");
     citaten.className = "wolkbronnen";
@@ -483,11 +525,12 @@ function toonSpreekwolk(beurt) {
       label.textContent = bron;
       citaten.append(label);
     }
-    wolk.append(citaten);
+    wolkInhoud.append(citaten);
   }
   plek.classList.add("spreekt");
   plek.setAttribute("aria-current", "true");
   plek.append(wolk);
+  if (plek === koningsplaats) pasKoningswolk();
 }
 
 function beurtKaart(beurt, routering, bronnen, open) {
@@ -657,75 +700,7 @@ function render(trace, verdict) {
 
 }
 
-const dossier = document.getElementById("dossier");
-const verdictrol = document.getElementById("verdictrol");
-const hoofdknoop = document.getElementById("open-dossier");
-const vorigeStap = document.getElementById("replay-vorige");
-const volgendeStap = document.getElementById("replay-volgende");
-const replayStatus = document.getElementById("replay-status");
-const openVerdictrol = document.getElementById("open-verdictrol");
-let stappen = [];
-let stapIndex = -1;
-
-function gaNaarStap(index) {
-  if (index < 0 || index >= stappen.length || index === stapIndex) return;
-  stapIndex = index;
-  const stap = stappen[index];
-  toonSpreekwolk(stap);
-  vorigeStap.disabled = index === 0;
-  volgendeStap.disabled = index === stappen.length - 1;
-  openVerdictrol.hidden = !volgendeStap.disabled;
-  // A newly disabled arrow would otherwise drop keyboard focus.
-  if (document.activeElement === vorigeStap && vorigeStap.disabled) volgendeStap.focus();
-  if (document.activeElement === volgendeStap && volgendeStap.disabled) openVerdictrol.focus();
-}
-
-hoofdknoop.addEventListener("click", () => {
-  if (stapIndex >= 0) {
-    dossier.showModal();
-    return;
-  }
-  document.querySelector(".poort").classList.add("open");
-  document.querySelector(".raadskaart").inert = false;
-  hoofdknoop.textContent = "Debat en verdict";
-  hoofdknoop.setAttribute("aria-haspopup", "dialog");
-  vorigeStap.hidden = volgendeStap.hidden = false;
-  gaNaarStap(0);
-});
-
-vorigeStap.addEventListener("click", () => gaNaarStap(stapIndex - 1));
-volgendeStap.addEventListener("click", () => gaNaarStap(stapIndex + 1));
-openVerdictrol.addEventListener("click", () => verdictrol.showModal());
-document.addEventListener("keydown", event => {
-  if (stapIndex < 0 || dossier.open || verdictrol.open || event.altKey || event.metaKey || event.ctrlKey) return;
-  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-  event.preventDefault();
-  gaNaarStap(stapIndex + (event.key === "ArrowLeft" ? -1 : 1));
-});
-
-async function laadReplay() {
-  try {
-    const [trace, verdict] = await Promise.all(["trace.json", "verdict.json"].map(async pad => {
-      const antwoord = await fetch(pad, { cache: "no-store" });
-      if (!antwoord.ok) throw new Error(pad);
-      return antwoord.json();
-    }));
-    if (trace.status !== "klaar" || !trace.run_id || trace.run_id !== verdict.run_id
-        || !verdict.samenvatting?.trim() || verdict.samenvatting.trim() === "TODO") {
-      throw new Error("Geen afgeronde run met verdict");
-    }
-    stappen = trace.beurten.filter(beurt => plaatsen.some(plaats => plaats.dataset.rol === beurt.spreker)
-      && (beurt.soort === "bericht" && beurt.tekst?.trim()
-        || beurt.soort === "routering" && beurt.aan && beurt.vraag?.trim()));
-    if (!stappen.length) throw new Error("Geen debatstappen");
-    render(trace, verdict);
-    hoofdknoop.disabled = false;
-  } catch {
-    replayStatus.textContent = "Geen afgerond debat met verdict gevonden.";
-    replayStatus.hidden = false;
-  }
-}
-laadReplay();
 </script>
+<script src="/chamber-mode.js"></script>
 </body>
 </html>

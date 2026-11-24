@@ -3,6 +3,7 @@
 Start met `uv run council`. Schrijft verdict.json en trace.json in de root van de repo.
 De Koning leidt het debat in `kies_volgende()`: hij beslist wie spreekt, met welke vraag en waarom.
 """
+import argparse
 import asyncio
 import json
 import os
@@ -380,8 +381,8 @@ def client(model_env):
     )
 
 
-def kennisbron_bestanden(rol):
-    map_ = KENNISBRONNEN / rol
+def kennisbron_bestanden(rol, bronnenmap=None):
+    map_ = (KENNISBRONNEN if bronnenmap is None else bronnenmap) / rol
     return sorted(p for p in map_.glob("*") if p.suffix in (".md", ".csv")) if map_.is_dir() else []
 
 
@@ -439,8 +440,10 @@ def toolcalls(response):
                 yield c.name, json.loads(args) if isinstance(args, str) and args else (args or {})
 
 
-async def run():
-    load_dotenv(ROOT / ".env")
+async def run(run_dir=None):
+    map_ = ROOT if run_dir is None else run_dir
+    bronnenmap = KENNISBRONNEN if run_dir is None else map_ / "kennisbronnen"
+    load_dotenv(map_ / ".env")
     opties = {"reasoning_effort": os.environ["REASONING"]} if os.getenv("REASONING") else None  # minder denkwerk = minder tokens
     run_id = f"{datetime.now().astimezone().isoformat(timespec='seconds')}_{uuid.uuid4().hex[:8]}"
     leden = raadsleden.alle()
@@ -449,7 +452,7 @@ async def run():
     trace = {"run_id": run_id, "status": "bezig", "raadsleden": [l.ROL for l in leden], "beurten": beurten, "geschillen": [], "verbruik": verbruik}
 
     def bewaar(naam, data):
-        (ROOT / naam).write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        (map_ / naam).write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
     def beurt(ronde, spreker, soort, **velden):
         beurten.append({"nr": len(beurten) + 1, "ronde": ronde, "spreker": spreker, "soort": soort, **velden})
@@ -462,7 +465,7 @@ async def run():
         agents = []
         for lid in leden:
             mcp_url = os.getenv(f"MCP_{lid.ROL.upper()}", "").strip()
-            bestanden = [] if mcp_url else kennisbron_bestanden(lid.ROL)
+            bestanden = [] if mcp_url else kennisbron_bestanden(lid.ROL, bronnenmap)
             tools = []
             if mcp_url:
                 url = urlsplit(mcp_url)
@@ -480,7 +483,7 @@ async def run():
                 beurt(0, lid.ROL, "bestand", bestand=f"{lid.ROL}/{p.name}")
             agents.append((lid, mcp_url, Agent(klein, instructies(lid, bestanden, mcp_url), name=lid.ROL, tools=tools)))
 
-        (ROOT / "verdict.json").unlink(missing_ok=True)  # setup gelukt: geen Verdict van een vorige run laten staan
+        (map_ / "verdict.json").unlink(missing_ok=True)  # setup gelukt: geen Verdict van een vorige run laten staan
         bewaar("trace.json", trace)
         per_rol = {lid.ROL: (lid, mcp_url, agent) for lid, mcp_url, agent in agents}
         debat, ronde = [], 1
@@ -548,8 +551,15 @@ async def run():
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run-dir", type=Path, help="Map met .env, kennisbronnen en de twee uitvoerbestanden")
+    args = parser.parse_args()
+    if args.run_dir is not None:
+        args.run_dir = args.run_dir.resolve()
+        if not args.run_dir.is_dir():
+            parser.error("--run-dir moet een bestaande map zijn.")
     sys.stdout.reconfigure(encoding="utf-8")
-    asyncio.run(run())
+    asyncio.run(run(args.run_dir))
 
 
 if __name__ == "__main__":
