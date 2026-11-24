@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 import raadsleden
 from council import (
-    bronstatus, kies_volgende, nieuwe_eigen_records, ontbrekend_bronbewijs, raadslid_antwoord,
+    RECORD_ID, bronstatus, kies_volgende, nieuwe_eigen_records, ontbrekend_bronbewijs, raadslid_antwoord,
 )
 
 
@@ -87,6 +87,9 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(keuze["aan"], "guardian_keeper")
         self.assertIn("schildspecificatie", keuze["vraag"])
+        self.assertIn("citeer de precieze voorwaarde", keuze["vraag"])
+        self.assertIn("één latere vergelijkbare opening", keuze["vraag"])
+        self.assertNotRegex(keuze["vraag"], RECORD_ID)
         self.assertIn("#3", keuze["reden"])
 
         debat.append({"nr": 6, "spreker": "guardian_keeper", "tekst": "GUA-993 beschrijft de proefpoort."})
@@ -96,6 +99,8 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(keuze["aan"], "historian")
         self.assertIn("herstelregel", keuze["vraag"])
+        self.assertIn("#6", keuze["vraag"])
+        self.assertIn("registratietijdstip", keuze["vraag"])
         self.assertIn("#6", keuze["reden"])
 
         debat.append({"nr": 9, "spreker": "historian", "tekst": "HIS-994 beschrijft het proefarchief."})
@@ -114,6 +119,11 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(keuze["aan"], "engineer")
         self.assertEqual(keuze["doel"], "herstel")
         self.assertIn("veiliggesteld", keuze["vraag"])
+        self.assertIn("eerdere proeven tot in de installatielog", keuze["vraag"])
+        self.assertIn("#6", keuze["vraag"])
+        self.assertIn("begintijd en locatie", keuze["vraag"])
+        self.assertIn("Vergelijk ook de duur", keuze["vraag"])
+        self.assertNotRegex(keuze["vraag"], RECORD_ID)
 
         beurten.append({"soort": "routering", **keuze})
         beurten.append({"soort": "toolcall", "spreker": "engineer"})

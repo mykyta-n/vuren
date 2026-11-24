@@ -45,7 +45,8 @@ VERVOLGVRAGEN = {
     "ingreep": OPENINGSVRAGEN[0],
     "herstel": (
         "Wat kun je volgens je eigen bron aanpassen om de werking te herstellen, "
-        "en wat moet eerst veiliggesteld worden? Maak onderscheid tussen een proef en het daadwerkelijke herstel."
+        "en wat moet eerst veiliggesteld worden? Maak onderscheid tussen een proef en het daadwerkelijke herstel. "
+        "Volg verwijzingen naar eerdere proeven tot in de installatielog en citeer de bijbehorende regel."
     ),
     "tegenbewijs": "Welke eigen waarneming kan de best onderbouwde verklaring ontkrachten?",
 }
@@ -241,8 +242,10 @@ def gerichte_bronvraag(debat, rollen, gesproken, onderbouwd, open_vragen, vervol
             "aan": "guardian_keeper",
             "spoor": "schildontwerp en afwijkende opening",
             "vraag": (
-                "Welke regel in je schildspecificatie verklaart een afwijkende opening, en welk gedateerd wachtrapport kun je daarmee vergelijken? "
-                "Zoek de opening ook op datum en tijd in je wachtrapportentabel. Benoem welk bestand je echt hebt gecontroleerd."
+                "Welke regel in je schildspecificatie verklaart een afwijkende opening? "
+                "Geef het artikelnummer en citeer de precieze voorwaarde. "
+                "Controleer in de tabel met wachtrapporten de eerste gemelde opening en zoek één latere vergelijkbare opening. "
+                "Geef per gevonden geval datum, begintijd, locatie en duur. Meld wat de wacht over de zegels vaststelde."
             ),
             "reden": f"Bijdrage #{bijdrage['nr']} geeft een eerste spoor uit het datanet. De schildspecificatie kan een toetsbare schakel leveren.",
             "open_vragen": open_vragen,
@@ -253,10 +256,11 @@ def gerichte_bronvraag(debat, rollen, gesproken, onderbouwd, open_vragen, vervol
             "aan": "historian",
             "spoor": "ontwerp- en herstelregel in het archief",
             "vraag": (
-                "Welke ontwerpregel en welke herstelregel geeft je archief voor de tijdvoorziening die in het debat wordt genoemd? "
-                "Zoek op de naam van die tijdvoorziening. Lees de toepasselijke archiefpassages als gericht zoeken niets oplevert. "
-                "Citeer elke gevonden regel met de voorwaarden en de datum van vastlegging. "
-                "Geef apart aan of de archieftekst de gemelde gebeurtenissen zelf noemt."
+                "Welke ontwerpregel en welke herstelregel geeft je archief voor de tijdvoorziening uit het debat? "
+                "Zoek op naam en lees de relevante archiefpassages als zoeken niets oplevert. "
+                "Citeer de regels met hun voorwaarden en datum van vastlegging. Geef aan of de tekst het voorval zelf noemt. "
+                f"Als bijdrage #{bijdrage['nr']} een latere opening noemt, zoek die op datum, tijd en locatie in je archieftabel. "
+                "Vergelijk het gebeurtenistijdstip met het registratietijdstip en zeg van wie de melding afkomstig is."
             ),
             "reden": f"Bijdrage #{bijdrage['nr']} beschrijft schildgedrag. Een historische ontwerpregel kan toetsen hoe de betrokken systemen samenhangen.",
             "open_vragen": open_vragen,
@@ -271,9 +275,16 @@ def gerichte_bronvraag(debat, rollen, gesproken, onderbouwd, open_vragen, vervol
             "open_vragen": open_vragen,
         }
     if "historian" in onderbouwd and "engineer" in rollen and not vervolgkeuzes["herstel"]:
+        vraag = VERVOLGVRAGEN["herstel"]
+        if "guardian_keeper" in onderbouwd:
+            bijdrage = next(b for b in reversed(debat) if b["spreker"] == "guardian_keeper")
+            vraag += (
+                f" Als bijdrage #{bijdrage['nr']} een latere schildopening noemt, zoek één datanetlog op dezelfde datum, "
+                "begintijd en locatie. Vergelijk ook de duur en citeer de gevonden logregel."
+            )
         return {
             "aan": "engineer",
-            "vraag": VERVOLGVRAGEN["herstel"],
+            "vraag": vraag,
             "doel": "herstel",
             "spoor": "gedocumenteerde herstelstap",
             "reden": "De Historian bracht archiefbewijs in. De Engineer kan het herstelplan toetsen aan de procedures van het datanet.",
