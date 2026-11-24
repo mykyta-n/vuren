@@ -1,0 +1,163 @@
+{
+  "run_id": "synthetische-repetitie-poort",
+  "status": "klaar",
+  "aan_het_woord": null,
+  "raadsleden": [
+    "engineer",
+    "guardian_keeper",
+    "historian"
+  ],
+  "beurten": [
+    {
+      "nr": 1,
+      "ronde": 1,
+      "spreker": "koning",
+      "soort": "routering",
+      "aan": "engineer",
+      "vraag": "Wat veranderde er aan de registratie?",
+      "reden": "Begin bij de wijziging en de eerste afwijking in de export."
+    },
+    {
+      "nr": 2,
+      "ronde": 1,
+      "spreker": "engineer",
+      "soort": "toolcall",
+      "tool": "zoek",
+      "argumenten": {
+        "term": "telling"
+      },
+      "pad": "https://example.invalid/engineer/mcp"
+    },
+    {
+      "nr": 3,
+      "ronde": 1,
+      "spreker": "engineer",
+      "soort": "bericht",
+      "tekst": "Op dag 2 kreeg de meetkast een nieuwe exportregel (ENG-901). Op dag 2, 5 en 8 staan er telkens twee regels in de export (ENG-902). Mijn eerste verklaring is dat de poort twee keer openging. Voor de dubbele regel vermoed ik herhaalde verzending (ENG-903)."
+    },
+    {
+      "nr": 4,
+      "ronde": 1,
+      "spreker": "koning",
+      "soort": "routering",
+      "aan": "guardian_keeper",
+      "vraag": "Hoeveel fysieke doorgangen registreerde de poort?",
+      "reden": "De export telt regels. Een aparte fysieke teller kan de verklaring van twee doorgangen toetsen."
+    },
+    {
+      "nr": 5,
+      "ronde": 1,
+      "spreker": "guardian_keeper",
+      "soort": "toolcall",
+      "tool": "zoek",
+      "argumenten": {
+        "term": "telling"
+      },
+      "pad": "https://example.invalid/guardian_keeper/mcp"
+    },
+    {
+      "nr": 6,
+      "ronde": 1,
+      "spreker": "guardian_keeper",
+      "soort": "bericht",
+      "tekst": "De verzegelde poortteller registreerde op dag 8 één doorgang (GUA-901). De teller staat los van de export. De tweede regel bewijst geen tweede doorgang."
+    },
+    {
+      "nr": 7,
+      "ronde": 1,
+      "spreker": "koning",
+      "soort": "routering",
+      "aan": "historian",
+      "vraag": "Is er een waarneming buiten beide tellers?",
+      "reden": "Controleer of het papieren register overeenkomt met de fysieke poortteller."
+    },
+    {
+      "nr": 8,
+      "ronde": 1,
+      "spreker": "historian",
+      "soort": "toolcall",
+      "tool": "zoek",
+      "argumenten": {
+        "term": "telling"
+      },
+      "pad": "https://example.invalid/historian/mcp"
+    },
+    {
+      "nr": 9,
+      "ronde": 1,
+      "spreker": "historian",
+      "soort": "bericht",
+      "tekst": "Op de papieren lijst staat voor hetzelfde tijdvak één bezoek (HIS-901). Ik vermoed een dubbele import. Het archief mist de importtijdstippen (HIS-902)."
+    },
+    {
+      "nr": 10,
+      "ronde": 2,
+      "spreker": "koning",
+      "soort": "routering",
+      "aan": "engineer",
+      "vraag": "Houdt je eerste verklaring stand?",
+      "reden": "Twee onafhankelijke bronnen tellen één passage. Verklaar het verschil en benoem de onzekerheid."
+    },
+    {
+      "nr": 11,
+      "ronde": 2,
+      "spreker": "engineer",
+      "soort": "toolcall",
+      "tool": "zoek",
+      "argumenten": {
+        "term": "telling"
+      },
+      "pad": "https://example.invalid/engineer/mcp"
+    },
+    {
+      "nr": 12,
+      "ronde": 2,
+      "spreker": "engineer",
+      "soort": "bericht",
+      "tekst": "Ik trek mijn verklaring van twee fysieke doorgangen terug. De export bevat twee regels met hetzelfde volgnummer (ENG-902). Er ontbreekt een ontvangstbevestiging (ENG-903), dus herhaalde verzending is nog een hypothese."
+    },
+    {
+      "nr": 13,
+      "ronde": 2,
+      "spreker": "koning",
+      "soort": "routering",
+      "aan": null,
+      "vraag": null,
+      "reden": "Het verschil tussen regels en doorgangen is getoetst. Om de oorzaak van de dubbele regel te bepalen ontbreken ontvangst- en importtijden."
+    },
+    {
+      "nr": 14,
+      "ronde": 2,
+      "spreker": "koning",
+      "soort": "bericht",
+      "tekst": "De export verdubbelt registraties. Op dag 8 tonen de poortteller en een onafhankelijke papieren lijst één fysieke doorgang. De oorzaak van de tweede regel blijft open."
+    }
+  ],
+  "geschillen": [
+    {
+      "onderwerp": "Twee regels of twee doorgangen?",
+      "standpunten": {
+        "engineer": "Twee exportregels leken op twee doorgangen.",
+        "guardian_keeper": "De aparte teller registreerde één doorgang."
+      },
+      "uitkomst": "De Engineer trekt de fysieke verklaring in na controle door wacht en archief.",
+      "bewijs": [
+        "ENG-902",
+        "GUA-901",
+        "HIS-901"
+      ]
+    },
+    {
+      "onderwerp": "Herhaalde verzending of dubbele import?",
+      "standpunten": {
+        "engineer": "Ik vermoed herhaalde verzending.",
+        "historian": "Ik vermoed dubbele import."
+      },
+      "uitkomst": null,
+      "bewijs": [
+        "ENG-903",
+        "HIS-902"
+      ]
+    }
+  ]
+}
