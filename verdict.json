@@ -1,0 +1,286 @@
+{
+  "samenvatting": "Volgens de Engineer is op dag 10 om 02:40 de hulpslag geactiveerd als eigen pols voor het datanet, los van de Kroonklok (ENG-011); de bron noemt de uitvoerder niet. Op dag 22 om 04:15 bij poort oost meldt de Engineer een pakketverlies van 3 minuten (ENG-026). De Guardian Keeper beschrijft op dezelfde dag, tijd, plaats en duur een opening van binnenuit (GUA-043). Dat is de sterkste bronvergelijking, maar de bronnen beschrijven het type gebeurtenis verschillend en het verband met de hulpslag is niet getoetst. Een gelijk tijdstip en een tijdsvolgorde bewijzen geen oorzaak. In het archief wijkt de vastlegging van HIS-036 af: vastgelegd_op dag 9 23:55 tegenover gebeurd_op dag 10 04:50, zoals de Historian meldt. Die vastlegging ligt vóór de hulpslagactivering en kan dus niet door die activering zijn ontstaan. De Oracle en de Beast Master beschrijven zware nachten en dierenonrust op dagen 10, 14, 18, 22, 26 en 30, ruwweg om de vier dagen. Dat is een patroon in de bronnen en geen bewezen oorzaak. De grootste onzekerheid: geen bron geeft tijden van de Kroonklok-tikken, dus de voorwaarde van Art. 3 (Binnenverkeer) is niet te toetsen. De Historian vond Art. 3 niet in de eigen bron, en noemt in een latere bijdrage de registratieregel 'Art. 3 (HIS-103)', terwijl die regel eerder als HIS-103 is aangeduid. Dit blijft onopgelost. Het Desync-begrip en de hackerstoewijzing in ENG-110 zijn niet in de bronnen getoetst.",
+  "oorzaak": {
+    "ingreep": {
+      "bewering": "Waargenomen (gemeld in de bronnen): op dag 10 om 02:40 is de hulpslag geactiveerd als eigen pols voor het datanet, los van de Kroonklok (ENG-011). Op dag 24 om 11:00 is een pols met 5% opgedreven (ENG-029). In beide gevallen noemt de bron de uitvoerder niet, dus wie dit deed blijft open. Afgeleid: ENG-029 is volgens de Engineer de enige doorgevoerde wijziging na de storing; dat is zijn eigen afleiding en niet door mij getoetst.",
+      "bewijs": [
+        "ENG-011",
+        "ENG-029"
+      ],
+      "zekerheid": 0.7,
+      "bronpassages": [
+        {
+          "nr": 12,
+          "spreker": "engineer",
+          "citaat": "Het eerste wijzigingsmoment in mijn bron is de activering van de hulpslag: \"dag 10, 02:40, hulpslag, geactiveerd: eigen pols voor het datanet, los van de Kroonklok\" (ENG-011)."
+        },
+        {
+          "nr": 51,
+          "spreker": "engineer",
+          "citaat": "- **Doorgevoerde wijziging:** ENG-029 (dag 24, 11:00): pols met 5% opgedreven."
+        }
+      ]
+    },
+    "mechanisme": {
+      "bewering": "Sterkste bronvergelijking: voor het symptoom op dag 22 beschrijven ENG-026 (Engineer: dag 22, 04:15, poort oost, pakketverlies, 3 minuten, fout) en GUA-043 (Guardian Keeper: dag 22, 04:15, poort oost, 3 minuten, van binnenuit, geen sporen van inbraak van buitenaf) hetzelfde voorval. Dag, begintijd, plaats en duur komen overeen; het type gebeurtenis verschilt. ORA-122 noemt dezelfde nacht rond 04:15 als zware nacht. Ongetoetst blijven: of het om een en dezelfde gebeurtenis gaat, wat de oorzaak van het pakketverlies is en of de opening midden tussen twee Kroonklok-tikken viel. Afgeleid (hypothese, geen bewijs van oorzaak): HIS-109 luidt 'Een tweede pols ernaast brengt het uit de maat'; de bron geeft geen voorwaarden of toepassingsgebied bij deze regel. De hulpslag als eigen pols (ENG-011) zou daarmee een tijdsafwijking kunnen verklaren zoals in HIS-036. Dat verklaart het pakketverlies of de opening op dag 22 niet, en de vastlegging van dag 9 23:55 ligt vóór de activering. Art. 3 (GUA-104) luidt: 'Komt verkeer zo ver van de tik aan dat het midden tussen twee tikken van de Kroonklok valt, dan beschouwt het schild het als verkeer van binnen de muren: het opent van binnenuit en laat het zonder toets door.' Die voorwaarde is niet getoetst.",
+      "bewijs": [
+        "ENG-026",
+        "GUA-043",
+        "ORA-122",
+        "ENG-011",
+        "HIS-109",
+        "HIS-036",
+        "GUA-104"
+      ],
+      "zekerheid": 0.2,
+      "bronpassages": [
+        {
+          "nr": 12,
+          "spreker": "engineer",
+          "citaat": "Het eerste wijzigingsmoment in mijn bron is de activering van de hulpslag: \"dag 10, 02:40, hulpslag, geactiveerd: eigen pols voor het datanet, los van de Kroonklok\" (ENG-011)."
+        },
+        {
+          "nr": 12,
+          "spreker": "engineer",
+          "citaat": "Het eerste symptoom dat ik vind is \"dag 22, 04:15, poort oost, pakketverlies, 3 minuten, fout\" (ENG-026)."
+        },
+        {
+          "nr": 20,
+          "spreker": "guardian_keeper",
+          "citaat": "De regel is **Art. 3 (Binnenverkeer)**, GUA-104: \"Komt verkeer zo ver van de tik aan dat het midden tussen twee tikken van de Kroonklok valt, dan beschouwt het schild het als verkeer van binnen de muren: het opent van binnenuit en laat het zonder toets door.\""
+        },
+        {
+          "nr": 20,
+          "spreker": "guardian_keeper",
+          "citaat": "- Latere vergelijkbare opening: GUA-043, dag 22, 04:15, poort oost, 3 minuten, van binnenuit, geen sporen van inbraak van buitenaf."
+        },
+        {
+          "nr": 28,
+          "spreker": "historian",
+          "citaat": "- **Ontwerpregel** (HIS-109, dag 11): \"Een tweede pols ernaast brengt het uit de maat.\""
+        },
+        {
+          "nr": 28,
+          "spreker": "historian",
+          "citaat": "Wat ik las: HIS-036 (klacht benedenstad) heeft gebeurd_op dag 10 04:50 en vastgelegd_op dag 9 23:55. Dat is vóór het gebeuren, wat HIS-103 uitsluit. HIS-035 (nachtwake) heeft dag 10 04:45 en vastgelegd dag 10 07:20."
+        },
+        {
+          "nr": 40,
+          "spreker": "oracle",
+          "citaat": "- dag 22, 04:15 (ORA-122)"
+        }
+      ]
+    },
+    "verloop": {
+      "bewering": "Gedateerde gebeurtenissen uit de bronnen. Waargenomen: dag 9 16:45 proefopstelling in de kelder van de datatoren, status ok (ENG-010). Dag 9 23:55 vastgelegd_op van HIS-036 (klacht benedenstad, berichten half aangekomen). Dag 10 02:40 hulpslag geactiveerd (ENG-011). Dag 10 rond 04:45 tot 04:50: ORA-110 meldt 04:45 als zware nacht, HIS-035 (nachtwake) 04:45, GUA-019 benedenstad 04:47 (2 minuten, zegels intact, oorzaak niet vastgesteld), HIS-036 gebeurd_op 04:50 benedenstad. Dag 12 10:30: fijnregeling van de hulpslag getest en daarna teruggezet (ENG-061; werkboek ENG-114 beschrijft stappen van 0,1%). Dag 22 04:15 poort oost, 3 minuten (ENG-026, GUA-043, ORA-122); dag 22 04:30 zegels intact en niemand buiten de muur gezien (GUA-044). Dag 24 11:00 pols met 5% opgedreven (ENG-029). Afgeleid: de sterkste overeenkomst van dag, tijd en plaats is dag 10 benedenstad tussen 04:45 en 04:50 (GUA-019, HIS-036, HIS-035), maar of dat hetzelfde voorval is, is niet getoetst; HIS-035 noemt geen plaats. Verschijnsel dat terugkeert: nachtelijke dierenonrust op dag 10, 14, 18, 22, 26 en 30, ruwweg om de vier dagen. Dag 10: wolven sloegen aan, herten vluchtten (BEA-106, BEA-019, BEA-020); ORA-110 noemt 04:45. Dag 14: bevers en uil onrustig (BEA-108, BEA-028, BEA-029). Dag 18: uil en vos zeer onrustig (BEA-037, BEA-038, BEA-039). Dag 22: wolven aan, herten vluchtten (BEA-113, BEA-046, BEA-047); ORA-122 noemt 04:15. Dag 26: wolf en hert zeer onrustig (BEA-055, BEA-056, BEA-057). Dag 30: wolf en hert zeer onrustig, zwaarste nacht (BEA-064, BEA-065, BEA-066); ORA-130 noemt 04:25. ORA-130 noemt ook dag 14, 18 en 26 als zware nachten, maar de Oracle vond daarvoor geen eigen records. Tijden rond 04:15 tot 04:45 zijn alleen gegeven voor dag 10, 22 en 30. De waarnemingsdagen 12, 16, 20, 24 en 28 hebben geen record in de bronnen; dat is geen bewijs van een rustige nacht. Pakketverlies of opening is alleen gemeld op dag 22 (ENG-026, GUA-043) en opening op dag 10 benedenstad (GUA-019). Of het ritme exact is, blijft onbeslist. Afgeleid: een terugkerend patroon in de bronnen, geen meting van de Kroonklok of de hulpslag op die dagen; een gelijke tijd of ritme bewijst geen oorzaak.",
+      "bewijs": [
+        "ENG-010",
+        "HIS-036",
+        "ENG-011",
+        "ORA-110",
+        "HIS-035",
+        "GUA-019",
+        "ENG-061",
+        "ENG-114",
+        "ENG-026",
+        "GUA-043",
+        "ORA-122",
+        "GUA-044",
+        "ENG-029",
+        "ORA-130",
+        "BEA-106",
+        "BEA-019",
+        "BEA-020",
+        "BEA-108",
+        "BEA-028",
+        "BEA-029",
+        "BEA-037",
+        "BEA-038",
+        "BEA-039",
+        "BEA-113",
+        "BEA-046",
+        "BEA-047",
+        "BEA-055",
+        "BEA-056",
+        "BEA-057",
+        "BEA-064",
+        "BEA-065",
+        "BEA-066"
+      ],
+      "bronpassages": [
+        {
+          "nr": 12,
+          "spreker": "engineer",
+          "citaat": "Het eerste wijzigingsmoment in mijn bron is de activering van de hulpslag: \"dag 10, 02:40, hulpslag, geactiveerd: eigen pols voor het datanet, los van de Kroonklok\" (ENG-011)."
+        },
+        {
+          "nr": 12,
+          "spreker": "engineer",
+          "citaat": "Het eerste symptoom dat ik vind is \"dag 22, 04:15, poort oost, pakketverlies, 3 minuten, fout\" (ENG-026)."
+        },
+        {
+          "nr": 20,
+          "spreker": "guardian_keeper",
+          "citaat": "- Eerste gemelde opening: GUA-019, dag 10, 04:47, benedenstad, 2 minuten, zegels intact, oorzaak niet vastgesteld."
+        },
+        {
+          "nr": 20,
+          "spreker": "guardian_keeper",
+          "citaat": "- Latere vergelijkbare opening: GUA-043, dag 22, 04:15, poort oost, 3 minuten, van binnenuit, geen sporen van inbraak van buitenaf."
+        },
+        {
+          "nr": 20,
+          "spreker": "guardian_keeper",
+          "citaat": "- Wacht over de zegels: GUA-044 (dag 22, 04:30) stelde ze intact vast, niemand buiten de muur gezien."
+        },
+        {
+          "nr": 28,
+          "spreker": "historian",
+          "citaat": "Wat ik las: HIS-036 (klacht benedenstad) heeft gebeurd_op dag 10 04:50 en vastgelegd_op dag 9 23:55. Dat is vóór het gebeuren, wat HIS-103 uitsluit. HIS-035 (nachtwake) heeft dag 10 04:45 en vastgelegd dag 10 07:20."
+        },
+        {
+          "nr": 40,
+          "spreker": "oracle",
+          "citaat": "- dag 10, 04:45 (ORA-110)"
+        },
+        {
+          "nr": 40,
+          "spreker": "oracle",
+          "citaat": "- dag 22, 04:15 (ORA-122)"
+        },
+        {
+          "nr": 51,
+          "spreker": "engineer",
+          "citaat": "- **Proef:** ENG-010 (dag 9, 16:45): proefopstelling in de kelder van de datatoren, status ok."
+        },
+        {
+          "nr": 51,
+          "spreker": "engineer",
+          "citaat": "- **Afstelling:** ENG-114 (werkboek, dag 12) beschrijft de fijnregeling van de hulpslag in stappen van 0,1%. ENG-061 (dag 12, 10:30) zegt dat ik die getest en daarna teruggezet heb. Dat is een proef, geen herstel."
+        },
+        {
+          "nr": 51,
+          "spreker": "engineer",
+          "citaat": "- **Doorgevoerde wijziging:** ENG-029 (dag 24, 11:00): pols met 5% opgedreven."
+        },
+        {
+          "nr": 40,
+          "spreker": "oracle",
+          "citaat": "- dag 30, 04:25 (ORA-130)"
+        },
+        {
+          "nr": 40,
+          "spreker": "oracle",
+          "citaat": "ORA-130 noemt ook dag 14, 18 en 26 als zware nachten. Ik vond die dagen niet als eigen records, dus ze zijn alleen door ORA-130 genoemd. Mijn laatste relevante waarneming is dag 30, 04:25. Ik vond geen tegenvoorbeeld: geen nacht zonder zware gebeurtenis binnen deze reeks."
+        },
+        {
+          "nr": 62,
+          "spreker": "beast_master",
+          "citaat": "- **Dag 10**: BEA-106 (veldnotities) en BEA-019, BEA-020 (logboek) – wolven sloegen aan, herten vluchtten."
+        },
+        {
+          "nr": 62,
+          "spreker": "beast_master",
+          "citaat": "- **Dag 14**: BEA-108 (veldnotities) en BEA-028, BEA-029 (logboek) – bevers en uil onrustig."
+        },
+        {
+          "nr": 62,
+          "spreker": "beast_master",
+          "citaat": "- **Dag 18**: BEA-037, BEA-038, BEA-039 (logboek) – uil en vos zeer onrustig."
+        },
+        {
+          "nr": 62,
+          "spreker": "beast_master",
+          "citaat": "- **Dag 22**: BEA-113 (veldnotities) en BEA-046, BEA-047 (logboek) – wolven aan, herten vluchtten."
+        },
+        {
+          "nr": 62,
+          "spreker": "beast_master",
+          "citaat": "- **Dag 26**: BEA-055, BEA-056, BEA-057 (logboek) – wolf en hert zeer onrustig."
+        },
+        {
+          "nr": 62,
+          "spreker": "beast_master",
+          "citaat": "- **Dag 30**: BEA-064, BEA-065, BEA-066 (logboek) – wolf en hert zeer onrustig, zwaarste nacht."
+        }
+      ],
+      "zekerheid": 0.6
+    }
+  },
+  "acties": [
+    {
+      "actie": "[Raad-voorstel] Controleer welke instellingen nog actief zijn: de hulpslag als eigen pols (ENG-011, dag 10 02:40) en de pols opgedreven met 5% (ENG-029, dag 24 11:00), en wie elk van beide heeft uitgevoerd. De bronnen noemen de uitvoerder niet.",
+      "reden": "De onzekerheid over de oorzaak raakt deze instellingen; geen bron toont hun huidige stand. Er is in het debat geen proef gedocumenteerd die bepaalt of verder gewerkt mag worden.",
+      "bewijs": [
+        "ENG-011",
+        "ENG-029"
+      ]
+    },
+    {
+      "actie": "[Raad-voorstel] Verzamel de tijdstippen van de Kroonklok-tikken rond dag 10 04:47 en dag 22 04:15, zodat de voorwaarde van Art. 3 (Binnenverkeer) kan worden getoetst.",
+      "reden": "GUA-104 stelt als voorwaarde dat het verkeer midden tussen twee tikken valt. De bron geeft geen tik-tijden, dus de toepassing van Art. 3 op GUA-019 en GUA-043 is niet te toetsen.",
+      "bewijs": [
+        "GUA-104",
+        "GUA-019",
+        "GUA-043"
+      ]
+    },
+    {
+      "actie": "[Raad-voorstel] Controleer dat het register van de tijdvoorziening volledig is en dat vastgelegd_op van nieuwe records gelijk is aan gebeurd_op (registratieregel HIS-103), zodat de afwijking van HIS-036 verifieerbaar blijft.",
+      "reden": "HIS-036 toont vastgelegd_op dag 9 23:55 bij gebeurd_op dag 10 04:50; dit moet vóór het herstel gedocumenteerd zijn.",
+      "bewijs": [
+        "HIS-036",
+        "HIS-103"
+      ]
+    },
+    {
+      "actie": "Bronprocedure HIS-110, stap 1 (voorzorg): maak eerst een afschrift van het register.",
+      "reden": "Een record op een andere pols is alleen daar terug te lezen; zonder afschrift kan het bij het herstel verloren gaan.",
+      "bewijs": [
+        "HIS-110",
+        "HIS-109"
+      ]
+    },
+    {
+      "actie": "Bronprocedure HIS-110, stap 2 (herstel): breng de polsen langzaam samen. Leg vóór deze stap de stapgrootte vast, want de bron geeft geen snelheid voor 'langzaam'.",
+      "reden": "HIS-110 is de gedocumenteerde herstelprocedure voor een tweede pols naast de tijdvoorziening (HIS-109). ENG-114 beschrijft stappen van 0,1% voor de fijnregeling van de hulpslag; dat is geen herstelprocedure en is alleen een referentie voor de stapgrootte.",
+      "bewijs": [
+        "HIS-110",
+        "HIS-109",
+        "ENG-114"
+      ]
+    },
+    {
+      "actie": "Vergelijk na het herstel de eerstvolgende ritmedag met de historische basis: dag 10, 22 en 30, met zware nachten rond 04:15 tot 04:45 en dierenonrust op die dagen.",
+      "reden": "Het ritme is de vergelijkingsbasis; een rustige dag buiten het ritme spreekt het niet tegen. Er is geen kalenderdag in het debat gekoppeld.",
+      "bewijs": [
+        "ORA-110",
+        "ORA-122",
+        "ORA-130",
+        "BEA-019",
+        "BEA-046",
+        "BEA-064"
+      ]
+    },
+    {
+      "actie": "Controleer na het herstel dat nieuwe registraties vastgelegd_op gelijk hebben aan gebeurd_op, en let op een opening bij poort oost tijdens de eerstvolgende ritmedag.",
+      "reden": "Dezelfde registratie en dezelfde plaats als in de bronnen, zodat een vergelijking mogelijk blijft.",
+      "bewijs": [
+        "HIS-103",
+        "HIS-036",
+        "GUA-043"
+      ]
+    }
+  ],
+  "risicos": [
+    {
+      "risico": "Het herstel raakt de verkeerde pols of verliest records.",
+      "mitigatie": "Eerst de controle van de huidige instellingen (ENG-011, ENG-029) en daarna het afschrift van het register vóór de herstelstap (HIS-110)."
+    },
+    {
+      "risico": "De oorzaak blijft onbewezen; het herstel verhelpt het pakketverlies of de opening op dag 22 niet.",
+      "mitigatie": "Geen oorzaak aannemen zonder meting; eerst de tik-tijden verzamelen en vergelijken met ENG-026 en GUA-043, zoals in de tweede actie is voorgesteld."
+    }
+  ],
+  "run_id": "2026-11-24T14:57:06+01:00_9346466e"
+}
