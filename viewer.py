@@ -29,7 +29,7 @@ def main():
                 return self.stuur(ROOT / "viewer.js", "text/javascript; charset=utf-8")
             if pad == "/viewer.css":
                 return self.stuur(ROOT / "viewer.css", "text/css; charset=utf-8")
-            if pad in ("/council-chamber.png", "/council-cast.png", "/council-extra-cast.png", "/verdict-parchment.png"):
+            if pad in ("/council-chamber.png", "/council-cast.png", "/council-extra-cast.png", "/council-king-throne.png", "/verdict-parchment.png"):
                 return self.stuur(ROOT / "assets" / pad[1:], "image/png")
             if pad == "/assets/pixelify-sans.ttf":
                 return self.stuur(ROOT / pad[1:], "font/ttf")
