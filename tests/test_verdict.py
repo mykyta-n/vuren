@@ -292,3 +292,25 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(verdict, expected_verdict(result))
         self.assertEqual(len(king.prompts), 1)
         self.assertEqual(len(king.review_prompts), 2)
+
+    async def test_bewaart_getoetst_bewijs_als_herstel_ook_mislukt(self):
+        draft = uncertain_result()
+        draft["verdict"]["samenvatting"] = "Een onbewezen oorzaak is zeker."
+        draft["verdict"]["oorzaak"]["mechanisme"] = {
+            "bewering": "Een ongetoetste puls veroorzaakte de storing.", "bewijs": ["ORA-901"],
+        }
+        review = {
+            "ingreep": {"fout": None, "passages": [1]},
+            "mechanisme": {"fout": "Dit record ondersteunt die oorzaak niet.", "passages": [2]},
+        }
+        king = FakeKing(draft, draft, reviews=[review, review])
+
+        verdict, disputes = await build_verdict(king, DEBATE, "test-run")
+
+        self.assertEqual(verdict["finalisatie"], "gedeeltelijk_na_broncontrole")
+        self.assertEqual(verdict["run_id"], "test-run")
+        self.assertEqual(verdict["oorzaak"]["ingreep"], expected_verdict(draft)["oorzaak"]["ingreep"])
+        self.assertEqual(verdict["oorzaak"]["mechanisme"], {"bewering": None, "bewijs": []})
+        self.assertNotIn("onbewezen oorzaak", json.dumps(verdict))
+        self.assertNotIn("ongetoetste puls", json.dumps(verdict))
+        self.assertEqual(disputes, [])

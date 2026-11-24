@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 
+from agent_framework.exceptions import AgentInvalidResponseException, ChatClientException
 from jsonschema import Draft202012Validator, ValidationError
 
 SCHEMA_DIR = Path(__file__).resolve().parent / "schema"
@@ -44,6 +45,8 @@ Geef één JSON-object met precies twee sleutels: verdict en geschillen. Python 
   en zet dat ID in het bewijs van ditzelfde veld. Voeg bij onderbouwde beweringen zekerheid toe als getal tussen 0 en 1.
 - verdict.acties: minstens één actie in uitvoeringsvolgorde, telkens met actie en reden,
   en optioneel een lijst bewijs. Begin bij onzekerheid met een controle of omkeerbare stap.
+  Onderscheid een proef van het herstel zelf. Gebruik een gedocumenteerde herstelprocedure als
+  het debat er een geeft en noem welke voorzorg vóór een wijziging nodig is.
 - verdict.risicos: minstens één object met risico en mitigatie.
 - verdict.voorspelling: alleen opnemen als het debat een onderbouwde volgende dag toelaat.
   Geef dan dag (positief geheel getal), bewering (wat te verwachten zonder ingrijpen)
@@ -52,6 +55,8 @@ Geef één JSON-object met precies twee sleutels: verdict en geschillen. Python 
   standpunten (object met minstens twee verschillende sprekers als sleutels),
   uitkomst (null als het debat het geschil niet beslecht) en bewijs (record-ID's).
   Een Raadslid dat iets niet kan beoordelen, neemt daarmee geen tegengesteld standpunt in.
+  Beschrijf alleen standpunten die het Raadslid zelf innam. Een gerapporteerde tijdvolgorde
+  bewijst niet dat dat Raadslid een oorzaak aanwees. Laat een mogelijk geschil weg bij twijfel over de standpunten.
 Geef [] als er geen geschillen zijn. Geef alleen JSON.
 """
 
@@ -209,6 +214,10 @@ Gebruik [] wanneer geen enkele passage relevant is. Geef uitsluitend JSON.
 """
 
 
+class RejectedClaims(ValueError):
+    """The reviewer reached a decision and rejected at least one claim."""
+
+
 def _source_passages(messages):
     """Indexeer letterlijke bronregels zodat de reviewer hun tekst niet hoeft over te schrijven."""
     passages = {}
@@ -281,7 +290,38 @@ async def _review_causes(king, cause, messages):
             raise ValueError(f"oorzaak.{field} lacks source passages for {', '.join(sorted(cited - covered))}.")
         cause[field]["bronpassages"] = passages
     if objections:
-        raise ValueError("\n".join(objections))
+        raise RejectedClaims("\n".join(objections))
+
+
+def _partial_verdict(cause, run_id):
+    """Keep reviewed claims and rebuild the plan without claims the reviewer rejected."""
+    verified = {field: cause[field] for field in CAUSE_FIELDS if cause[field].get("bronpassages")}
+    if not verified:
+        return None
+    open_fields = [field for field in CAUSE_FIELDS if field not in verified]
+    verdict = {
+        "run_id": run_id,
+        "samenvatting": " ".join(item["bewering"] for item in verified.values())
+        + f" De broncontrole laat deze onderdelen open: {', '.join(open_fields)}.",
+        "oorzaak": {field: verified.get(field, {"bewering": None, "bewijs": []}) for field in CAUSE_FIELDS},
+        "acties": [
+            {
+                "actie": "Bewaar de relevante bronrecords en de huidige instellingen.",
+                "reden": "Een afschrift houdt het bewijs beschikbaar tijdens het onderzoek en een latere herstelproef.",
+            },
+            {
+                "actie": "Toets de open oorzaakvragen met een aanvullende waarneming vóór een ingreep.",
+                "reden": "De beschikbare gegevens ondersteunen slechts een deel van de verklaring.",
+            },
+        ],
+        "risicos": [{
+            "risico": "Een blijvende wijziging kan gegevensverlies veroorzaken of een verkeerd mechanisme behandelen.",
+            "mitigatie": "Bewaar eerst een afschrift en voer alleen een gecontroleerde, omkeerbare toets uit.",
+        }],
+        "finalisatie": "gedeeltelijk_na_broncontrole",
+    }
+    VERDICT_VALIDATOR.validate(verdict)
+    return verdict
 
 
 async def build_verdict(king, debate, run_id) -> tuple[dict, list[dict]]:
@@ -295,14 +335,30 @@ async def build_verdict(king, debate, run_id) -> tuple[dict, list[dict]]:
     }
     prompt = f"{INSTRUCTIONS}\nDebat (JSON):\n{json.dumps(messages, ensure_ascii=False)}"
     request = prompt
+    partial = None
+    partial_count = 0
     for attempt in range(2):
-        response = await king.run(messages=request)
         try:
+            response = await king.run(messages=request)
             verdict, disputes = _parse_result(response.text, debate_ids, roles, run_id)
             await _review_causes(king, verdict["oorzaak"], messages)
+            if partial and not any(slot.get("bronpassages") for slot in verdict["oorzaak"].values()):
+                return partial, []
             return verdict, disputes
+        except (AgentInvalidResponseException, ChatClientException):
+            if partial:
+                return partial, []
+            raise
         except (ValueError, ValidationError) as error:
+            if isinstance(error, RejectedClaims):
+                cause = verdict["oorzaak"]
+                reviewed_count = sum(bool(slot.get("bronpassages")) for slot in cause.values())
+                if reviewed_count > partial_count:
+                    partial = _partial_verdict(cause, run_id)
+                    partial_count = reviewed_count
             if attempt:
+                if partial:
+                    return partial, []
                 raise ValueError("The King did not produce a valid verdict after one repair attempt.") from error
             detail = error.message if isinstance(error, ValidationError) else str(error)
             request = (

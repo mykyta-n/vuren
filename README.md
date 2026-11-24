@@ -103,7 +103,13 @@ Viewer op een andere poort: zet `VIEWER_PORT=8101` als omgevingsvariabele. Een a
 
 `kies_volgende()` in `council.py` geeft de Koning de Raadslid-berichten, de eerder gestelde vragen, de open vragen en de beschikbare Rollen. Bij elke bijdrage ziet de Koning welke eigen record-ID's voor het eerst genoemd zijn. Na een beurt zonder nieuwe eigen records krijgt eerst een andere Rol de kans om bij te dragen. Elke keuze wordt een `routering` in de trace met `aan`, `vraag`, `reden` en de bijgewerkte `open_vragen`.
 
-Python valideert de modelkeuze en bewaakt het budget. Bij ongeldige uitvoer krijgt het model één herstelpoging. Als de keuze daarna onbruikbaar is, krijgt een beschikbare Rol met de minste beurten een vervolgvraag. Voor een vroege stop (`aan: null`) moeten minstens drie Rollen een bronverwijzing hebben ingebracht en moeten de belangrijke open vragen zijn beantwoord. Bij het bereiken van de limiet blijven onbeantwoorde vragen zichtbaar in de trace.
+Na de eerste bewijsronde krijgt het herstelplan een gerichte vraag zodra Engineer en Historian bronbewijs hebben ingebracht. De Koning registreert een `doel` voor vervolgvragen. Er zijn maximaal twee vervolgbeurten per doel, met hoogstens één per Rol. Bij ongeldige uitvoer krijgt het model één herstelpoging. Als de keuze daarna onbruikbaar is, kiest Python een beschikbare Rol met weinig beurten voor een resterend doel.
+
+De Koning geeft een vraag een kort `spoor`. Een Raadslid zet de zoekuitkomst in `bronstatus`. Na een lege zoektocht in de eigen bron krijgt dezelfde Rol die vraag niet opnieuw. Na twee lege zoektochten sluit de Koning dat spoor voor vervolgvragen. De onzekerheid blijft zichtbaar in het debat en kan in het Verdict open blijven. Als Oracle een onderbouwde tijdreeks geeft, kan Beast Master die vóór een vroege stop met een onafhankelijke bron toetsen.
+
+Voor een vroege stop (`aan: null`) moeten minstens drie Rollen een bronverwijzing hebben ingebracht. De Koning motiveert of er genoeg bewijs is voor een Verdict of welke waarneming de beschikbare bronnen niet kunnen leveren. De resterende vragen staan in `open_vragen`.
+
+Als de broncontrole na herstel nog oorzaakclaims afwijst, kan een gedeeltelijk Verdict de getoetste claims behouden. De overige oorzaakvelden blijven open en het herstelplan begint met bewijs bewaren en gericht toetsen.
 
 ### Na je eerste run: waar kijk je naar?
 
