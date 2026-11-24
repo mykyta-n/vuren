@@ -117,6 +117,20 @@
             "properties": {
               "tekst": {
                 "type": "string"
+              },
+              "spreekwolk": {
+                "description": "Optionele korte weergave van een Raadslid-bericht. De bewijs-ID's staan ook in tekst.",
+                "type": "object",
+                "required": ["tekst", "bewijs"],
+                "properties": {
+                  "tekst": {"type": "string", "minLength": 1, "maxLength": 140},
+                  "bewijs": {
+                    "type": "array",
+                    "items": {"$ref": "#/$defs/id"},
+                    "maxItems": 2,
+                    "uniqueItems": true
+                  }
+                }
               }
             }
           }
