@@ -155,6 +155,19 @@ async function run() {
     await absent(verdict.samenvatting);
     assert.deepEqual(errors, []);
     console.log("PASS new run resets playback and excludes the previous verdict");
+
+    const partial = {...verdict, acties:[{actie:"Bewaar de bronrecords.", reden:"Voorzorg."}]};
+    await write("verdict", partial);
+    await write("trace", {...trace, status:"klaar", verdict_finalisatie:"gedeeltelijk_na_broncontrole"});
+    await page.goto(url + "pitch");
+    await see("Gedeeltelijk verdict na broncontrole. Het herstelplan bevat alleen algemene voorzorgsmaatregelen.");
+    await page.setViewportSize({width:1280,height:900});
+    await page.goto(url);
+    await click("Open de verdictrol");
+    await page.locator("#rol-inhoud").getByText("Gedeeltelijk verdict na broncontrole.", {exact:true}).waitFor();
+    assert.match(await page.locator("#rol-inhoud").innerText(), /alleen algemene voorzorgsmaatregelen/);
+    assert.deepEqual(errors, []);
+    console.log("PASS partial verdict and generic recovery warning in both views");
   } finally {
     if (browser) await browser.close();
     server.kill();

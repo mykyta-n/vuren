@@ -160,6 +160,12 @@ function outcome() {
     main.append(el("p", reason, "notice"), button("Bekijk het debat", () => switchPage("debat")));
     return;
   }
+  const gedeeltelijk = [verdict.finalisatie, trace.verdict_finalisatie].includes("gedeeltelijk_na_broncontrole");
+  if (gedeeltelijk) {
+    const voorzorg = !(verdict.acties ?? []).some(a => a.bewijs?.length);
+    const melding = "Gedeeltelijk verdict na broncontrole." + (voorzorg ? " Het herstelplan bevat alleen algemene voorzorgsmaatregelen." : "");
+    main.append(el("p", melding, "notice"));
+  }
   const summary = rich(verdict.samenvatting);
   summary.classList.add("summary");
   const grid = el("div", null, "grid"), left = el("div", null, "stack"), right = el("div", null, "stack");

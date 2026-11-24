@@ -85,7 +85,13 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
                     item["uitkomst"] = "De meter is vervangen."
                 corrected = deepcopy(result)
                 item["bewijs"].append(UNKNOWN_ID)
-                king = FakeKing(result, corrected)
+                reviews = None
+                if section == "prediction":
+                    reviews = [{
+                        "ingreep": {"fout": None, "passages": [1]},
+                        "voorspelling": {"fout": None, "passages": [1]},
+                    }]
+                king = FakeKing(result, corrected, reviews=reviews)
 
                 verdict, disputes = await build_verdict(king, DEBATE, "test-run")
 
@@ -267,6 +273,18 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("lacks source passages for ORA-901", king.prompts[1])
         self.assertEqual(len(verdict["oorzaak"]["ingreep"]["bronpassages"]), 2)
 
+    async def test_review_index_and_unrelated_extra_passage(self):
+        result = uncertain_result()
+        review = {"ingreep": {"fout": None, "passages": [2, 1]}}
+        king = FakeKing(result, reviews=[review])
+
+        verdict, _ = await build_verdict(king, DEBATE, "test-run")
+
+        inputs = json.loads(king.review_prompts[0].removeprefix(REVIEW_INSTRUCTIONS))
+        self.assertEqual(inputs["passages_per_bewijs"], {"ingreep": {"ENG-901": [1]}})
+        self.assertEqual(verdict, expected_verdict(result))
+        self.assertEqual(len(king.prompts), 1)
+
     async def test_passage_uses_trace_text_and_handles_a_record_heading(self):
         debate = [
             {"nr": 2, "spreker": "engineer", "tekst": "**ENG‑901**\n\nMeter A bleef op zijn plaats."},
@@ -314,3 +332,116 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("onbewezen oorzaak", json.dumps(verdict))
         self.assertNotIn("ongetoetste puls", json.dumps(verdict))
         self.assertEqual(disputes, [])
+
+    async def test_rejected_recurrence_preserves_sequence_recovery_and_forecast(self):
+        debate = [
+            {"nr": 2, "spreker": "engineer", "tekst": "Meter A is vervangen op dag 2 (ENG-901)."},
+            {"nr": 4, "spreker": "oracle", "tekst": "Een bel klonk op dagen 2 en 6 (ORA-901)."},
+            {"nr": 6, "spreker": "historian", "tekst": "Maak een afschrift voordat de veer wordt teruggezet (HIS-901)."},
+        ]
+        draft = uncertain_result()
+        draft["geschillen"] = []
+        draft["verdict"]["oorzaak"]["verloop"] = {
+            "begin": {"bewering": "Meter A is vervangen op dag 2.", "bewijs": ["ENG-901"]},
+            "herhaling": {"bewering": "De meter werd elke vier dagen vervangen.", "bewijs": ["ORA-901"]},
+        }
+        draft["verdict"]["acties"] = [
+            {"actie": "Maak een afschrift.", "reden": "Dit beschermt de brongegevens.", "bewijs": ["HIS-901"]},
+            {"actie": "Zet de veer terug.", "reden": "Doe dit na het afschrift.", "bewijs": ["HIS-901"]},
+        ]
+        draft["verdict"]["voorspelling"] = {
+            "dag": 10, "bewering": "De bel kan op dag 10 klinken als het ritme doorloopt.", "bewijs": ["ORA-901"],
+        }
+        review = {
+            "ingreep": {"fout": None, "passages": [1]},
+            "verloop.begin": {"fout": None, "passages": [1]},
+            "verloop.herhaling": {"fout": "Alleen de bel herhaalt zich.", "passages": [2]},
+            "herstelplan": {"fout": None, "passages": [3]},
+            "voorspelling": {"fout": None, "passages": [2]},
+        }
+        repaired = uncertain_result()
+        repaired["geschillen"] = []
+        log = []
+        king = FakeKing(draft, repaired, reviews=[review, {"ingreep": review["ingreep"]}])
+
+        verdict, _ = await build_verdict(king, debate, "test-run", review_log=log)
+
+        self.assertEqual(verdict["finalisatie"], "gedeeltelijk_na_broncontrole")
+        self.assertEqual(verdict["oorzaak"]["verloop"]["bewering"], "Meter A is vervangen op dag 2.")
+        self.assertEqual(verdict["oorzaak"]["verloop"]["bewijs"], ["ENG-901"])
+        self.assertEqual(verdict["acties"], draft["verdict"]["acties"])
+        self.assertEqual(verdict["voorspelling"], draft["verdict"]["voorspelling"])
+        self.assertNotIn("werd elke vier dagen vervangen", json.dumps(verdict))
+        self.assertEqual(log[0]["afgewezen"], {"verloop.herhaling": "Alleen de bel herhaalt zich."})
+
+        draft["verdict"]["oorzaak"]["verloop"]["herhaling"]["bewering"] = "Een bel klonk op dagen 2 en 6."
+        review["verloop.herhaling"]["fout"] = None
+        king = FakeKing(draft, reviews=[review])
+
+        verdict, _ = await build_verdict(king, debate, "test-run")
+
+        timeline = verdict["oorzaak"]["verloop"]
+        self.assertEqual(timeline["bewering"], "Meter A is vervangen op dag 2. Een bel klonk op dagen 2 en 6.")
+        self.assertEqual(timeline["bewijs"], ["ENG-901", "ORA-901"])
+        self.assertEqual([p["nr"] for p in timeline["bronpassages"]], [2, 4])
+
+    async def test_repair_cannot_reuse_recovery_that_the_reviewer_rejected(self):
+        draft = uncertain_result()
+        draft["verdict"]["acties"] = [{
+            "actie": "Gooi de meter weg.", "reden": "Veronderstelde schade.", "bewijs": ["ENG-901"],
+        }]
+        accepted = {"fout": None, "passages": [1]}
+        rejected_recovery = {"fout": "Het verslag noemt geen schade.", "passages": [1]}
+        king = FakeKing(draft, draft, reviews=[
+            {"ingreep": accepted, "herstelplan": rejected_recovery},
+            {"ingreep": accepted, "herstelplan": rejected_recovery},
+        ])
+
+        verdict, _ = await build_verdict(king, DEBATE, "test-run")
+
+        self.assertEqual(verdict["finalisatie"], "gedeeltelijk_na_broncontrole")
+        self.assertNotIn("Gooi de meter weg", json.dumps(verdict))
+
+    async def test_reviewed_recovery_survives_bad_monitoring(self):
+        debate = [*DEBATE, {
+            "nr": 6, "spreker": "historian", "tekst": "Bewaar eerst een afschrift en zet daarna de veer geleidelijk terug (HIS-901).",
+        }]
+        draft = uncertain_result()
+        core = [
+            {"actie": "Maak eerst een afschrift.", "reden": "Bescherm de proefgegevens.", "bewijs": ["HIS-901"]},
+            {"actie": "Zet daarna de veer geleidelijk terug.", "reden": "Volg de procedure.", "bewijs": ["HIS-901"]},
+        ]
+        draft["verdict"]["acties"] = core
+        bad_monitoring = [{"actie": "Controleer na herstel op de al verstreken proefdag.", "reden": "Vergelijk de meting.", "bewijs": ["ORA-901"]}]
+        ingreep = {"fout": None, "passages": [1]}
+        recovery = {"fout": None, "passages": [3]}
+        for optional in (bad_monitoring, {"onjuist": "geen lijst"}):
+            with self.subTest(optional=optional):
+                draft["verdict"]["nacontrole"] = optional
+                review = {"ingreep": ingreep, "herstelplan": recovery}
+                if isinstance(optional, list):
+                    review["nacontrole"] = {"fout": "De proefdag is al voorbij.", "passages": [2]}
+                king = FakeKing(draft, draft, reviews=[review, {k: v for k, v in review.items() if k != "herstelplan"}])
+                log = []
+
+                verdict, _ = await build_verdict(king, debate, "test-run", review_log=log)
+
+                self.assertEqual(verdict["finalisatie"], "gedeeltelijk_na_broncontrole")
+                self.assertEqual(verdict["acties"], core)
+                self.assertEqual(verdict["risicos"], draft["verdict"]["risicos"])
+                self.assertNotIn("nacontrole", verdict)
+                self.assertIn("nacontrole", log[-1]["afgewezen"])
+                second_review = json.loads(king.review_prompts[1].removeprefix(REVIEW_INSTRUCTIONS))
+                self.assertNotIn("herstelplan", second_review["claims"])
+
+        final_check = [{"actie": "Controleer na herstel bij de volgende proef.", "reden": "Vergelijk met de meting.", "bewijs": ["ORA-901"]}]
+        draft["verdict"]["nacontrole"] = final_check
+        king = FakeKing(draft, reviews=[{
+            "ingreep": ingreep, "herstelplan": recovery, "nacontrole": {"fout": None, "passages": [2]},
+        }])
+
+        verdict, _ = await build_verdict(king, debate, "test-run")
+
+        self.assertEqual(verdict["acties"], core + final_check)
+        self.assertNotIn("finalisatie", verdict)
+        self.assertNotIn("nacontrole", verdict)

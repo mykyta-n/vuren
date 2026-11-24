@@ -506,9 +506,12 @@ function render(trace, verdict) {
   if (!verdict || verdict.run_id !== trace.run_id) {
     vd.innerHTML = `<span class="leeg">${verdict ? "verdict.json hoort bij een andere run" : bezig ? "komt na de Koning" : "geen verdict.json"}</span>`;
   } else {
+    const gedeeltelijk = [verdict.finalisatie, trace.verdict_finalisatie].includes("gedeeltelijk_na_broncontrole");
+    const voorzorg = !(verdict.acties || []).some(a => a.bewijs?.length);
+    const melding = gedeeltelijk ? `<div class="slot"><b>Gedeeltelijk verdict na broncontrole.</b>${voorzorg ? "Het herstelplan bevat alleen algemene voorzorgsmaatregelen." : ""}</div>` : "";
     const slot = (naam, s) => `<div class="slot"><b>${naam}</b>${s?.bewering ? opmaak(s.bewering) + " " + (s.bewijs || []).map(i => opmaak(i)).join(" ") + (typeof s.zekerheid === "number" ? ` · Zekerheid: ${Math.round(s.zekerheid * 100)}%` : "") : '<span class="leeg">onbekend (null)</span>'}</div>`;
     const o = verdict.oorzaak || {};
-    vd.innerHTML = `<div class="slot"><b>Samenvatting</b>${verdict.samenvatting === "TODO" ? '<span class="leeg">TODO</span>' : opmaak(verdict.samenvatting)}</div>`
+    vd.innerHTML = melding + `<div class="slot"><b>Samenvatting</b>${verdict.samenvatting === "TODO" ? '<span class="leeg">TODO</span>' : opmaak(verdict.samenvatting)}</div>`
       + slot("Ingreep", o.ingreep) + slot("Mechanisme", o.mechanisme) + slot("Verloop", o.verloop)
       + `<div class="slot"><b>Herstelplan</b><ol>${(verdict.acties || []).map(a => `<li>${opmaak(a.actie)}${a.reden ? " – " + opmaak(a.reden) : ""} ${(a.bewijs || []).map(opmaak).join(" ")}</li>`).join("")}</ol></div>`
       + (verdict.voorspelling ? `<div class="slot"><b>Voorspelling · Dag ${esc(verdict.voorspelling.dag)}</b>${opmaak(verdict.voorspelling.bewering)} ${(verdict.voorspelling.bewijs || []).map(opmaak).join(" ")}</div>` : "")

@@ -57,7 +57,7 @@ Maak thuis al je repo aan (stap 1–2 hieronder) en draai daarin `uv sync` (en `
    ```
    uv run validate
    ```
-   Groen betekent dat de uitvoer aan de schema’s voldoet en beide bestanden uit dezelfde run komen. Controleer vervolgens of de aangehaalde records de conclusies dragen.
+   Groen betekent dat de uitvoer voldoet aan de schema’s en getoetste spelregels, de run-ID’s overeenkomen en de bewijs-ID’s en eventuele bronpassages in het debat terug te vinden zijn. Een waarschuwing geeft aan wanneer de broncontrole slechts een gedeeltelijk verdict opleverde. Controleer of de aangehaalde records de conclusies dragen.
 
 Geen uv? Maak een venv (`python -m venv .venv`, activeer met `.venv\Scripts\activate` op Windows of `source .venv/bin/activate`), dan `pip install -e .` en `python viewer.py`, `python council.py`, `python validate.py`.
 
@@ -86,7 +86,7 @@ Viewer op een andere poort: zet `VIEWER_PORT=8101` als omgevingsvariabele. Een a
 | `kennisbronnen/` | Leeg (op een LEESMIJ na). Pak `pack.zip` uit in de root van de repo; dan staan de bronnen in `kennisbronnen/<rol>/`. Staat in `.gitignore`. |
 | `schema/` | De JSON-schema's van het Council Verdict en de Debat-trace. |
 | `voorbeeld/` | Een ingevuld voorbeeld over een verzonnen zaak (een dorpsmolen), om de vorm te zien. Het valideert bewust niet tegen het Achrona-schema. |
-| `validate.py` | Toetst je uitvoer aan de schema's. |
+| `validate.py` | Toetst de uitvoer aan de schema's en controleert spelregels en bronverwijzingen. |
 
 ## Wat stel je zelf in?
 
