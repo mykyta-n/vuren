@@ -95,52 +95,69 @@
   }
   .raadskaart { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
   .zitplaats { position: absolute; left: var(--x); top: var(--y); translate: -50% -100%; width: 8.5%; text-align: center; color: var(--rolkleur); }
-  .zitplaats {
-    animation: rondlopen 216s ease-in-out infinite;
-    animation-delay: var(--wandel-start, 0s);
+  .sprite { position: relative; display: block; aspect-ratio: .5; background: url(council-cast.png) var(--frame) 50% / 400% 100% no-repeat; image-rendering: pixelated; }
+  .zitplaats.spreekt { z-index: 2; }
+  .handgebaar {
+    position: absolute; left: 2%; top: 27%; width: 29%; height: 32%;
+    background: linear-gradient(#31231d 0 16%, #f5c395 16% 39%, #31231d 39% 45%, var(--rolkleur) 45% 100%);
+    clip-path: polygon(8% 0, 53% 0, 53% 16%, 72% 16%, 72% 34%, 64% 34%, 64% 49%, 77% 49%, 77% 72%, 100% 72%, 100% 100%, 62% 100%, 62% 87%, 39% 87%, 39% 66%, 24% 66%, 24% 40%, 0 40%, 0 12%, 8% 12%);
+    filter: brightness(.78); opacity: 0; transform: translate(29%, 45%) rotate(20deg);
+    transform-origin: 90% 90%; transition: opacity 120ms, transform 210ms ease-out;
+    pointer-events: none;
   }
-  .zitplaats[aria-current="true"], .zitplaats.wijst { animation-play-state: paused; z-index: 2; }
-  @keyframes rondlopen {
-    0%, 24%, 100% { left: var(--x); top: var(--y); --voethoogte: 0; }
-    1% { left: var(--x); top: var(--y); --voethoogte: 1; }
-    3% { left: var(--x); top: 44%; --voethoogte: 1; }
-    7% { left: var(--wandel-eerst, 12%); top: 44%; --voethoogte: 1; }
-    10% { left: var(--wandel-eerst, 12%); top: 84%; --voethoogte: 1; }
-    16% { left: var(--wandel-laatst, 88%); top: 84%; --voethoogte: 1; }
-    19% { left: var(--wandel-laatst, 88%); top: 44%; --voethoogte: 1; }
-    23% { left: var(--x); top: 44%; --voethoogte: 1; }
+  .spreekt .handgebaar { opacity: 1; transform: translate(0, 0) rotate(-13deg); }
+  .spreekwolk {
+    position: absolute; z-index: 4; left: 50%; bottom: 91%; translate: -50% 0;
+    width: clamp(130px, 20vw, 240px); padding: 8px 11px; background: #fff0cf; color: #28202a;
+    border: 2px solid #57445b; box-shadow: 3px 3px 0 #13131d; text-align: left;
+    font: 600 clamp(12px, 1.4vw, 17px)/1.13 var(--pixel); overflow-wrap: anywhere;
+    animation: wolk-in 180ms ease-out;
   }
-  .sprite { position: relative; display: block; aspect-ratio: .5; }
-  .sprite::before, .voet {
-    position: absolute; inset: 0; background: url(council-cast.png) var(--frame) 50% / 400% 100% no-repeat;
-    image-rendering: pixelated;
-  }
-  .sprite::before { content: ""; clip-path: inset(0 0 24%); z-index: 1; }
-  .voet { animation: stap .85s ease-in-out infinite alternate; }
-  .voet.links { clip-path: inset(73% 50% 0 0); }
-  .voet.rechts { clip-path: inset(73% 0 0 50%); animation-direction: alternate-reverse; }
-  .zitplaats[aria-current="true"] .voet, .zitplaats.wijst .voet { animation-name: none; }
-  @keyframes stap {
-    from { transform: translateY(calc(var(--voethoogte, 0) * -2%)); }
-    to { transform: translateY(calc(var(--voethoogte, 0) * 1.5%)); }
-  }
+  .spreekwolk::after { content: ""; position: absolute; left: calc(50% - 6px); bottom: -7px; width: 10px; height: 10px; rotate: 45deg; border: solid #57445b; border-width: 0 2px 2px 0; background: #fff0cf; }
+  .spreekwolk small { display: block; margin-top: 4px; color: #563c6b; font-size: .84em; }
+  @keyframes wolk-in { from { opacity: 0; transform: translateY(4px) scale(.96); } to { opacity: 1; transform: none; } }
   .naamplaat { position: absolute; top: 89%; left: 50%; translate: -50% 0; background: #141416e8; border: 1px solid #80705a; border-radius: 3px; padding: 1px 5px; font: 600 clamp(9px, 1.25vw, 15px)/1.25 var(--pixel); white-space: nowrap; }
   .zitplaats[aria-current="true"] .naamplaat { border-color: currentColor; box-shadow: 0 0 10px currentColor; }
   .zitplaats[aria-current="true"] .sprite { animation: spreek 1.55s ease-in-out infinite; filter: drop-shadow(0 0 5px var(--rolkleur)); }
   .zitplaats.wijst .sprite { animation: wijs 730ms ease-in-out; filter: drop-shadow(0 0 7px var(--koning)); }
   @keyframes spreek { 0%, 72%, 100% { transform: translateY(0); } 45% { transform: translateY(-2.5%); } }
   @keyframes wijs { 0%, 100% { transform: translate(0, 0); } 45% { transform: translateY(-7%) scale(1.04); } }
-  .uitrol {
-    position: absolute; z-index: 3; left: 50%; top: 64%; translate: -50% -50%;
-    width: min(78%, 365px); text-align: center; color: #3d2917;
-    padding: 12px clamp(7px, 2vw, 20px); border-block: 5px solid #956638; border-inline: 1px solid #9d6d41;
-    background: linear-gradient(90deg, #b3834f, #e9c992 13%, #f6e1b3 50%, #e9c992 87%, #b3834f);
-    box-shadow: 0 7px 18px #12100bc9;
-    animation: ontvouw 900ms cubic-bezier(.19,.75,.3,1) both;
+  .koningsrol {
+    position: absolute; z-index: 5; left: 22%; top: 58%; width: 56%; height: 15%; min-height: 13px;
+    rotate: -12deg; border: 2px solid #754519; border-radius: 3px; padding: 0;
+    background: linear-gradient(#ffefba, #e2ab5d 48%, #ae6838 56%, #e6b06d 68%, #b47a44);
+    box-shadow: 0 0 0 1px #fff1ac, 0 0 14px 5px #ffca69a6;
+    animation: rolgloed 2.5s ease-in-out infinite;
   }
-  .uitrol[hidden] { display: none; }
-  .uitrol h2 { margin: 0 0 6px; font: 700 clamp(14px, 2vw, 25px)/1.1 var(--pixel); }
-  .uitrol button { font-size: clamp(12px, 1.55vw, 15px); }
+  .koningsrol::before, .koningsrol::after { clip-path: none; inset: 0 39%; background: #9c3c36; }
+  .koningsrol::after { inset: 26% 38%; background: #bd5847; box-shadow: 0 1px #73301f; }
+  .koningsrol:hover { box-shadow: 0 0 0 2px #fff1ac, 0 0 22px 9px #ffca69; }
+  .koningsrol:hover::after { background: #e87d62; }
+  .rol-greep::before, .rol-greep::after {
+    content: ""; position: absolute; top: 40%; width: 19%; height: 74%;
+    border: 2px solid #3b241d; background: linear-gradient(#f3c497 0 45%, #c08061 46%);
+    clip-path: polygon(28% 0, 75% 0, 75% 20%, 100% 20%, 100% 70%, 75% 70%, 75% 100%, 0 100%, 0 26%, 28% 26%);
+  }
+  .rol-greep::before { left: -7%; }
+  .rol-greep::after { right: -7%; scale: -1 1; }
+  @keyframes rolgloed { 50% { box-shadow: 0 0 0 2px #fff1ac, 0 0 21px 6px #ffca69bf; } }
+  .perkament {
+    width: min(680px, calc(100% - 28px)); max-height: 87svh;
+    border: 4px solid #7e4b2a; border-block: 12px ridge #926039;
+    border-radius: 3px; color: #40261a;
+    background: radial-gradient(ellipse at 48% 24%, #fff0ce99, transparent 65%),
+      linear-gradient(90deg, #d2a369 0%, #efce96 8%, #f6dfad 50%, #e6be82 92%, #c7945b 100%);
+    box-shadow: 0 10px 35px #090604d9, inset 0 0 28px #92552c47;
+    padding: clamp(14px, 4vw, 33px);
+  }
+  .perkament[open] { animation: ontvouw 750ms cubic-bezier(.19,.75,.3,1) both; }
+  .perkament::backdrop { background: #100906b8; }
+  .perkamentkop { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid #a66c4066; padding-bottom: 13px; margin-bottom: 15px; }
+  .perkamentkop h2 { margin: 0; font: 700 clamp(24px, 5vw, 39px)/1 var(--pixel); }
+  .perkament .slot { margin: 0 0 15px; font-size: 15px; }
+  .perkament .slot b { color: #694028; }
+  .perkament .leeg { color: #6f4f3b; }
+  .perkament .id { --kleur-id: #5d315c !important; background: #5d315c16; }
   @keyframes ontvouw {
     from { clip-path: inset(48% 0); opacity: .65; }
     to { clip-path: inset(0 -20% -50%); opacity: 1; }
@@ -159,7 +176,8 @@
     .naamplaat { padding-inline: 2px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .zitplaats, .sprite, .voet, .uitrol, .vlam, .torengloed, .torenring, .denkt { animation: none !important; }
+    .sprite, .spreekwolk, .koningsrol, .perkament, .vlam, .torengloed, .torenring, .denkt { animation: none !important; }
+    .handgebaar { transition: none; }
     .vlam, .torengloed { opacity: .3; }
     .torenring { display: none; }
   }
@@ -220,15 +238,11 @@
       <span class="vlam" style="--licht-x:95.6%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-2s"></span>
     </div>
     <ul class="raadskaart" aria-label="Zitplaatsen van de Raad">
-      <li class="zitplaats" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:28%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"><span class="voet links"></span><span class="voet rechts"></span></span><span class="naamplaat">Beast Master</span></li>
-      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%;--wandel-start:-54s;--wandel-eerst:88%;--wandel-laatst:12%"><span class="sprite" aria-hidden="true"><span class="voet links"></span><span class="voet rechts"></span></span><span class="naamplaat">Engineer</span></li>
-      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%;--wandel-start:-108s"><span class="sprite" aria-hidden="true"><span class="voet links"></span><span class="voet rechts"></span></span><span class="naamplaat">Koning</span></li>
-      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%;--wandel-start:-162s;--wandel-eerst:88%;--wandel-laatst:12%"><span class="sprite" aria-hidden="true"><span class="voet links"></span><span class="voet rechts"></span></span><span class="naamplaat">Oracle</span></li>
+      <li class="zitplaats" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:28%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Beast Master</span></li>
+      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Engineer</span></li>
+      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Koning</span><button id="open-verdictrol" class="koningsrol" type="button" aria-haspopup="dialog" aria-label="Open de verdictrol" title="Open de verdictrol" hidden><span class="rol-greep" aria-hidden="true"></span></button></li>
+      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%"><span class="sprite" aria-hidden="true"><span class="handgebaar"></span></span><span class="naamplaat">Oracle</span></li>
     </ul>
-    <div id="verdictrol" class="uitrol" hidden>
-      <h2>Het verdict is klaar</h2>
-      <button id="open-verdictrol" type="button" aria-haspopup="dialog">Lees het verdict</button>
-    </div>
   </div>
 </figure>
 <div class="keuze" aria-live="polite">
@@ -236,6 +250,13 @@
   <p id="kamer-vraag"></p>
   <p id="kamer-reden"></p>
 </div>
+<dialog id="verdictrol" class="perkament" aria-labelledby="verdictrol-titel">
+  <div class="perkamentkop">
+    <h2 id="verdictrol-titel">Oordeel van de Raad</h2>
+    <form method="dialog"><button type="submit" autofocus>Sluiten</button></form>
+  </div>
+  <div id="rol-inhoud"></div>
+</dialog>
 <dialog id="dossier" class="dossier" aria-labelledby="dossier-titel">
   <div class="dossierkop">
     <h2 id="dossier-titel">Raadsdossier</h2>
@@ -310,6 +331,66 @@ function renderKamer(trace, beurten, bezig) {
   document.getElementById("kamer-reden").textContent = keuze?.reden ? "Waarom: " + keuze.reden : "";
 }
 
+let wolkRun;
+let wolkNr = 0;
+let wolkTimer;
+let wolkRij = [];
+
+function toonSpreekwolk(beurt) {
+  for (const plaats of plaatsen) {
+    plaats.classList.remove("spreekt");
+    plaats.querySelector(".spreekwolk")?.remove();
+  }
+  if (!beurt) return;
+  const plek = plaatsen.find(plaats => plaats.dataset.rol === beurt.spreker);
+  if (!plek) return;
+  const tekst = (beurt.soort === "routering" ? beurt.vraag : beurt.tekst) || "";
+  const regel = tekst.replace(/[*#`]/g, "").replace(/^\s*(?:Koning|Engineer|Oracle|Beast Master):\s*/i, "")
+    .trim().split(/(?<=[.!?])\s+|\n/)[0];
+  if (!regel) return;
+  const woorden = regel.split(/\s+/);
+  const fragment = woorden.slice(0, 17).join(" ");
+  const bronnen = [...new Set(ids(fragment).map(bron => bron.id))].slice(0, 2);
+  const wolk = document.createElement("div");
+  wolk.className = "spreekwolk";
+  wolk.setAttribute("role", "status");
+  wolk.textContent = fragment.replace(ID_RE, "").replace(/\(\s*\)/g, "").replace(/\s+([.,!?])/g, "$1").trim()
+    + (woorden.length > 17 ? "…" : "");
+  if (bronnen.length) {
+    const citaten = document.createElement("small");
+    citaten.textContent = bronnen.join(" · ");
+    wolk.append(citaten);
+  }
+  plek.classList.add("spreekt");
+  plek.append(wolk);
+}
+
+function speelWolken() {
+  toonSpreekwolk(wolkRij.shift());
+  wolkTimer = setTimeout(() => {
+    wolkTimer = undefined;
+    if (wolkRij.length) speelWolken();
+  }, 2100);
+}
+
+function planSpreekwolk(trace, beurten, bezig) {
+  if (wolkRun !== trace.run_id || !bezig) {
+    clearTimeout(wolkTimer);
+    wolkTimer = undefined;
+    wolkRij = [];
+    wolkNr = 0;
+    wolkRun = trace.run_id;
+    toonSpreekwolk(null);
+  }
+  if (!bezig) return;
+  const nieuw = beurten.filter(beurt => beurt.nr > wolkNr
+    && (beurt.soort === "bericht" || beurt.soort === "routering"));
+  if (!nieuw.length) return;
+  wolkRij.push(...(wolkNr ? nieuw : nieuw.slice(-1)));
+  wolkNr = nieuw.at(-1).nr;
+  if (!wolkTimer) speelWolken();
+}
+
 function render(trace, verdict) {
   const status = document.getElementById("status");
   const bezig = trace.status === "bezig";
@@ -320,9 +401,12 @@ function render(trace, verdict) {
   // Debat per ronde
   const beurten = trace.beurten || [];
   renderKamer(trace, beurten, bezig);
+  planSpreekwolk(trace, beurten, bezig);
   const verdictKlaar = trace.status === "klaar" && verdict?.run_id === trace.run_id
     && verdict.samenvatting?.trim() && verdict.samenvatting.trim() !== "TODO";
-  document.getElementById("verdictrol").hidden = !verdictKlaar;
+  document.getElementById("open-verdictrol").hidden = !verdictKlaar;
+  const rol = document.getElementById("verdictrol");
+  if (!verdictKlaar && rol.open) rol.close();
   let html = "", ronde = null;
   const telling = {}, padfouten = [], koningTools = [], vreemdeIds = [], zonderRoutering = [];
   let toegewezen = null, raadslidBeurten = 0;
@@ -406,13 +490,15 @@ function render(trace, verdict) {
   if (!verdict || verdict.run_id !== trace.run_id) {
     vd.innerHTML = `<span class="leeg">${verdict ? "verdict.json hoort bij een andere run" : bezig ? "komt na de Koning" : "geen verdict.json"}</span>`;
   } else {
-    const slot = (naam, s) => `<div class="slot"><b>${naam}</b>${s?.bewering ? opmaak(s.bewering) + " " + (s.bewijs || []).map(i => opmaak(i)).join(" ") : '<span class="leeg">onbekend (null)</span>'}</div>`;
+    const slot = (naam, s) => `<div class="slot"><b>${naam}</b>${s?.bewering ? opmaak(s.bewering) + " " + (s.bewijs || []).map(i => opmaak(i)).join(" ") + (typeof s.zekerheid === "number" ? ` · Zekerheid: ${Math.round(s.zekerheid * 100)}%` : "") : '<span class="leeg">onbekend (null)</span>'}</div>`;
     const o = verdict.oorzaak || {};
     vd.innerHTML = `<div class="slot"><b>Samenvatting</b>${verdict.samenvatting === "TODO" ? '<span class="leeg">TODO</span>' : opmaak(verdict.samenvatting)}</div>`
       + slot("Ingreep", o.ingreep) + slot("Mechanisme", o.mechanisme) + slot("Verloop", o.verloop)
-      + `<div class="slot"><b>Herstelplan</b><ol>${(verdict.acties || []).map(a => `<li>${opmaak(a.actie)}</li>`).join("")}</ol></div>`
-      + `<div class="slot"><b>Risico's</b><ol>${(verdict.risicos || []).map(r => `<li>${opmaak(r.risico)}</li>`).join("")}</ol></div>`;
+      + `<div class="slot"><b>Herstelplan</b><ol>${(verdict.acties || []).map(a => `<li>${opmaak(a.actie)}${a.reden ? " – " + opmaak(a.reden) : ""} ${(a.bewijs || []).map(opmaak).join(" ")}</li>`).join("")}</ol></div>`
+      + (verdict.voorspelling ? `<div class="slot"><b>Voorspelling · Dag ${esc(verdict.voorspelling.dag)}</b>${opmaak(verdict.voorspelling.bewering)} ${(verdict.voorspelling.bewijs || []).map(opmaak).join(" ")}</div>` : "")
+      + `<div class="slot"><b>Risico's</b><ol>${(verdict.risicos || []).map(r => `<li>${opmaak(r.risico)}${r.mitigatie ? " – " + opmaak(r.mitigatie) : ""}</li>`).join("")}</ol></div>`;
   }
+  document.getElementById("rol-inhoud").innerHTML = verdictKlaar ? vd.innerHTML : "";
 }
 
 async function haal(pad) {
@@ -432,8 +518,7 @@ async function lus() {
 const dossier = document.getElementById("dossier");
 document.getElementById("open-dossier").addEventListener("click", () => dossier.showModal());
 document.getElementById("open-verdictrol").addEventListener("click", () => {
-  dossier.showModal();
-  document.getElementById("verdict").scrollIntoView({ block: "nearest" });
+  document.getElementById("verdictrol").showModal();
 });
 lus();
 </script>
