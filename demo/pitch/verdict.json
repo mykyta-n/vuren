@@ -1,0 +1,80 @@
+{
+  "run_id": "synthetische-repetitie-poort",
+  "samenvatting": "De export verdubbelt registraties. Op dag 8 tonen de poortteller en een onafhankelijke papieren lijst één fysieke doorgang. De oorzaak van de tweede regel blijft open.",
+  "oorzaak": {
+    "ingreep": {
+      "bewering": "Op dag 2 veranderde de exportregel.",
+      "bewijs": [
+        "ENG-901"
+      ],
+      "zekerheid": 0.85,
+      "bronpassages": [
+        {
+          "nr": 3,
+          "spreker": "engineer",
+          "citaat": "Op dag 2 kreeg de meetkast een nieuwe exportregel (ENG-901)."
+        }
+      ]
+    },
+    "mechanisme": {
+      "bewering": null,
+      "bewijs": []
+    },
+    "verloop": {
+      "bewering": "Op dag 2, 5 en 8 verschenen dubbele regels. Op dag 8 tellen wacht en archief één fysieke doorgang.",
+      "bewijs": [
+        "ENG-902",
+        "GUA-901",
+        "HIS-901"
+      ],
+      "zekerheid": 0.8,
+      "bronpassages": [
+        {
+          "nr": 3,
+          "spreker": "engineer",
+          "citaat": "Op dag 2, 5 en 8 staan er telkens twee regels in de export (ENG-902)."
+        },
+        {
+          "nr": 6,
+          "spreker": "guardian_keeper",
+          "citaat": "De verzegelde poortteller registreerde op dag 8 één doorgang (GUA-901)."
+        },
+        {
+          "nr": 9,
+          "spreker": "historian",
+          "citaat": "Op de papieren lijst staat voor hetzelfde tijdvak één bezoek (HIS-901)."
+        }
+      ]
+    }
+  },
+  "acties": [
+    {
+      "actie": "Bewaar beide regels met hun volgnummer.",
+      "reden": "Zo blijft het verschil tussen een dubbele regel en een extra doorgang zichtbaar.",
+      "bewijs": [
+        "ENG-902"
+      ]
+    },
+    {
+      "actie": "Vergelijk verzend- en importtijdstippen.",
+      "reden": "Bepaal waar de tweede regel ontstaat voordat de export verandert.",
+      "bewijs": [
+        "ENG-903",
+        "HIS-902"
+      ]
+    }
+  ],
+  "risicos": [
+    {
+      "risico": "Een echt bezoek verdwijnt bij automatisch ontdubbelen.",
+      "mitigatie": "Vergelijk eerst met de aparte poortteller en bewaar de originele regels."
+    }
+  ],
+  "voorspelling": {
+    "dag": 11,
+    "bewering": "Bij voortzetting van het driedaagse patroon kan opnieuw een dubbele regel verschijnen.",
+    "bewijs": [
+      "ENG-902"
+    ]
+  }
+}
