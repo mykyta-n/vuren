@@ -118,7 +118,8 @@
   .zijplaats.links .spreekwolk { translate: -24% 0; --staart-x: 24%; }
   .zijplaats.rechts .spreekwolk { translate: -76% 0; --staart-x: 76%; }
   .spreekwolk::after { content: ""; position: absolute; left: calc(var(--staart-x, 50%) - 6px); bottom: -7px; width: 10px; height: 10px; rotate: 45deg; border: solid #57445b; border-width: 0 2px 2px 0; background: #fff0cf; }
-  .spreekwolk small { display: block; margin-top: 4px; color: #563c6b; font-size: .84em; }
+  .wolkbronnen { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .wolkbronnen .id { --kleur-id: #563c6b; line-height: 1.35; }
   @keyframes wolk-in { from { opacity: 0; transform: translateY(4px) scale(.96); } to { opacity: 1; transform: none; } }
   .naamplaat { position: absolute; top: 89%; left: 50%; translate: -50% 0; background: #141416e8; border: 1px solid #80705a; border-radius: 3px; padding: 1px 5px; font: 600 clamp(9px, 1.25vw, 15px)/1.25 var(--pixel); white-space: nowrap; }
   .zitplaats[aria-current="true"] .naamplaat { border-color: currentColor; box-shadow: 0 0 10px currentColor; }
@@ -336,6 +337,23 @@ let wolkNr = 0;
 let wolkTimer;
 let wolkRij = [];
 
+function spreekwolkInhoud(beurt) {
+  const kort = beurt.spreekwolk;
+  if (beurt.soort === "bericht" && typeof kort?.tekst === "string" && kort.tekst.trim() && Array.isArray(kort.bewijs)) {
+    return { tekst: kort.tekst, bronnen: kort.bewijs };
+  }
+  const tekst = (beurt.soort === "routering" ? beurt.vraag : beurt.tekst) || "";
+  const regel = tekst.replace(/[*#`]/g, "").replace(/^\s*(?:Koning|Engineer|Oracle|Beast Master|Archmage|Guardian Keeper|Historian):\s*/i, "")
+    .trim().split(/(?<=[.!?])\s+|\n/)[0];
+  if (!regel) return null;
+  const woorden = regel.split(/\s+/);
+  const fragment = woorden.slice(0, 17).join(" ");
+  const bronnen = [...new Set(ids(fragment).map(bron => bron.id))].slice(0, 2);
+  const inhoud = fragment.replace(ID_RE, "").replace(/\(\s*\)/g, "").replace(/\s+([.,!?])/g, "$1").trim()
+    + (woorden.length > 17 ? "…" : "");
+  return { tekst: inhoud, bronnen };
+}
+
 function toonSpreekwolk(beurt) {
   for (const plaats of plaatsen) {
     plaats.classList.remove("spreekt");
@@ -344,21 +362,22 @@ function toonSpreekwolk(beurt) {
   if (!beurt) return;
   const plek = plaatsen.find(plaats => plaats.dataset.rol === beurt.spreker);
   if (!plek) return;
-  const tekst = (beurt.soort === "routering" ? beurt.vraag : beurt.tekst) || "";
-  const regel = tekst.replace(/[*#`]/g, "").replace(/^\s*(?:Koning|Engineer|Oracle|Beast Master|Archmage|Guardian Keeper|Historian):\s*/i, "")
-    .trim().split(/(?<=[.!?])\s+|\n/)[0];
-  if (!regel) return;
-  const woorden = regel.split(/\s+/);
-  const fragment = woorden.slice(0, 17).join(" ");
-  const bronnen = [...new Set(ids(fragment).map(bron => bron.id))].slice(0, 2);
+  const inhoud = spreekwolkInhoud(beurt);
+  if (!inhoud) return;
+  const { tekst, bronnen } = inhoud;
   const wolk = document.createElement("div");
   wolk.className = "spreekwolk";
   wolk.setAttribute("role", "status");
-  wolk.textContent = fragment.replace(ID_RE, "").replace(/\(\s*\)/g, "").replace(/\s+([.,!?])/g, "$1").trim()
-    + (woorden.length > 17 ? "…" : "");
+  wolk.textContent = tekst;
   if (bronnen.length) {
-    const citaten = document.createElement("small");
-    citaten.textContent = bronnen.join(" · ");
+    const citaten = document.createElement("div");
+    citaten.className = "wolkbronnen";
+    for (const bron of bronnen) {
+      const label = document.createElement("span");
+      label.className = "id";
+      label.textContent = bron;
+      citaten.append(label);
+    }
     wolk.append(citaten);
   }
   plek.classList.add("spreekt");

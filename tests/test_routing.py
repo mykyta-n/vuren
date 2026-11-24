@@ -4,7 +4,9 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import raadsleden
-from council import bronstatus, kies_volgende, nieuwe_eigen_records, ontbrekend_bronbewijs
+from council import (
+    bronstatus, kies_volgende, nieuwe_eigen_records, ontbrekend_bronbewijs, raadslid_antwoord,
+)
 
 
 def routering(rol, vraag, doel="mechanisme", spoor="hoogte van de meting"):
@@ -23,6 +25,29 @@ class BronvoortgangTest(unittest.TestCase):
         self.assertEqual(bronstatus("De proefbron mist deze meting.\n**BRONSTATUS:** buiten_bron\n"),
                          ("De proefbron mist deze meting.", "buiten_bron"))
         self.assertEqual(bronstatus("Geen marker, wel onzekerheid."), ("Geen marker, wel onzekerheid.", None))
+
+    def test_spreekwolk_bewaart_antwoord_en_citeert_alleen_zichtbaar_bewijs(self):
+        volledig = "De proefpoort registreerde één telling (ENG‑991). Het mechanisme blijft onbekend."
+        antwoord = volledig + "\n**SPREEKWOLK:** De proefpoort registreerde één telling (ENG-991).\nBRONSTATUS: gevonden"
+        tekst, status, wolk = raadslid_antwoord(antwoord)
+        self.assertEqual(tekst, volledig)
+        self.assertEqual(status, "gevonden")
+        self.assertEqual(wolk, {"tekst": "De proefpoort registreerde één telling.", "bewijs": ["ENG-991"]})
+
+    def test_ongeldige_spreekwolk_laat_antwoord_en_bronstatus_intact(self):
+        volledig = "Mijn proefbron mist de telling."
+        for regel in ("Een telling (ENG-999).", " ".join(["woord"] * 18), ""):
+            with self.subTest(regel=regel):
+                antwoord = volledig + "\nSPREEKWOLK: " + regel + "\nBRONSTATUS: buiten_bron"
+                self.assertEqual(raadslid_antwoord(antwoord), (volledig, "buiten_bron", None))
+
+    def test_oud_antwoord_en_spreekwolk_zonder_citaat(self):
+        volledig = "Mijn proefbron mist de telling."
+        self.assertEqual(raadslid_antwoord(volledig), (volledig, None, None))
+        self.assertEqual(
+            raadslid_antwoord(volledig + "\nBRONSTATUS: onzeker\nSPREEKWOLK: Ik kan de telling niet bevestigen."),
+            (volledig, "onzeker", {"tekst": "Ik kan de telling niet bevestigen.", "bewijs": []}),
+        )
 
     def test_negeert_bronstatus_zonder_eigen_bronraadpleging(self):
         beurten = [

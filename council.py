@@ -31,6 +31,7 @@ BEURTENBUDGET = 10  # spelregel: maximaal 10 Raadslid-beurten (berichten van Raa
 MINIMUM_ROLLEN = 3
 RECORD_ID = re.compile(r"\b(ARC|ENG|GUA|HIS|ORA|BEA)[-‐‑‒–—―−]([0-9]{3})\b")
 BRONSTATUS = re.compile(r"(?im)^[ \t]*\*{0,2}BRONSTATUS:\*{0,2}[ \t]*(gevonden|geen_treffers|buiten_bron|onzeker)\*{0,2}\s*\Z")
+SPREEKWOLK = re.compile(r"(?im)^[ \t]*\*{0,2}SPREEKWOLK:\*{0,2}[ \t]*([^\r\n]*)")
 OPENINGSVRAGEN = [
     "Welke ingreep ging aan de eerste symptomen vooraf?",
     "Welk mechanisme verbindt die ingreep met de symptomen?",
@@ -153,6 +154,29 @@ def nieuwe_eigen_records(debat):
 def bronstatus(tekst):
     match = BRONSTATUS.search(tekst)
     return (tekst[:match.start()].rstrip(), match[1].lower()) if match else (tekst, None)
+
+
+def raadslid_antwoord(antwoord):
+    """Haal de weergaveregel en bronstatus uit de inhoudelijke bijdrage."""
+    regels = SPREEKWOLK.findall(antwoord)
+    tekst, status = bronstatus(SPREEKWOLK.sub("", antwoord).rstrip())
+    if len(regels) != 1 or not tekst.strip():
+        return tekst, status, None
+
+    regel = regels[0].strip().strip("*").strip()
+    bewijs = list(dict.fromkeys(
+        f"{prefix}-{nummer}" for prefix, nummer in RECORD_ID.findall(regel)
+    ))
+    antwoord_ids = {f"{prefix}-{nummer}" for prefix, nummer in RECORD_ID.findall(tekst)}
+    zin = RECORD_ID.sub("", regel)
+    zin = re.sub(r"\([,;·/\s]*\)|\[[,;·/\s]*\]", "", zin)
+    zin = " ".join(zin.split()).strip(" |,;·")
+    zin = re.sub(r"\s+([.,!?])", r"\1", zin)
+    if not zin or len(zin) > 140 or len(zin.split()) > 17:
+        return tekst, status, None
+    if len(bewijs) > 2 or not set(bewijs) <= antwoord_ids:
+        return tekst, status, None
+    return tekst, status, {"tekst": zin, "bewijs": bewijs}
 
 
 def ontbrekend_bronbewijs(beurten):
@@ -477,6 +501,10 @@ async def run():
             berichten = "\n\n".join(f"#{b['nr']} {b['spreker']}: {b['tekst']}" for b in debat)
             prompt = (
                 "Debat tot nu toe:\n\n" + (berichten or "(nog niets)") + f"\n\nVraag aan jou: {keuze['vraag']}\n"
+                "Schrijf na je volledige antwoord één aparte regel SPREEKWOLK: met de belangrijkste "
+                "bevinding of onzekerheid in ongeveer 15 woorden. Zet maximaal twee record-ID's tussen "
+                "haakjes aan het eind van die regel en gebruik alleen ID's die dezelfde bewering in "
+                "je volledige antwoord ondersteunen. Als er geen bewijs is, benoem de onzekerheid zonder ID.\n"
                 "Eindig met een aparte regel BRONSTATUS: gevonden, geen_treffers, buiten_bron of onzeker. "
                 "Gebruik gevonden voor bruikbaar bewijs over deze vraag en buiten_bron alleen als de bron deze waarneming niet dekt."
             )
@@ -484,8 +512,11 @@ async def run():
             tel(verbruik, "klein", r.usage_details)
             for tool, args in toolcalls(r):
                 beurt(ronde, rol, "toolcall", tool=tool, argumenten=args, pad=mcp_url)
-            tekst, status = bronstatus(r.text)
-            beurt(ronde, rol, "bericht", tekst=tekst, bronstatus=status)
+            tekst, status, spreekwolk = raadslid_antwoord(r.text)
+            bericht = {"tekst": tekst, "bronstatus": status}
+            if spreekwolk is not None:
+                bericht["spreekwolk"] = spreekwolk
+            beurt(ronde, rol, "bericht", **bericht)
             debat.append({"nr": beurten[-1]["nr"], "spreker": rol, "tekst": tekst})
             print(f"\n[ronde {ronde}] {lid.NAAM}:\n{tekst}")
 
