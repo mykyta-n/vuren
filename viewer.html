@@ -103,8 +103,8 @@ function ids(tekst) {
 function render(trace, verdict) {
   const status = document.getElementById("status");
   const bezig = trace.status === "bezig";
-  status.className = "pil " + (bezig ? "bezig" : "klaar");
-  status.textContent = bezig ? `bezig${trace.aan_het_woord ? " · " + (NAMEN[trace.aan_het_woord] || trace.aan_het_woord) + " is aan het woord" : ""}` : "klaar";
+  status.className = "pil " + (trace.status || "");
+  status.textContent = bezig ? `bezig${trace.aan_het_woord ? " · " + (NAMEN[trace.aan_het_woord] || trace.aan_het_woord) + " is aan het woord" : ""}` : (trace.status || "klaar");
   document.getElementById("runid").textContent = trace.run_id || "";
 
   // Debat per ronde
