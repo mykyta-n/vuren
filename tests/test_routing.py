@@ -216,3 +216,38 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(keuze["aan"])
         self.assertEqual(keuze["open_vragen"], ["Waardoor ontstond de afwijking?"])
+
+    async def test_vervolg_na_zes_beurten_heeft_een_letterlijke_bronaanwijzing_nodig(self):
+        rollen = ("oracle", "historian", "beast_master", "guardian_keeper", "oracle", "historian")
+        debat = [
+            {"nr": nr, "spreker": rol, "tekst": f"{rol[:3].upper()}-{900 + nr} noemt een dagmeting."}
+            for nr, rol in enumerate(rollen, start=1)
+        ]
+        beurten = [{"soort": "toolcall", "spreker": b["spreker"]} for b in debat]
+        vervolg = routering("archmage", "Wat toont de onafhankelijke meting?")
+        fake = {**json.loads(vervolg.text), "bronaanwijzing": {"nr": 6, "citaat": "HIS-906 bevat geen meting."}}
+        koning = SimpleNamespace(run=AsyncMock(side_effect=[vervolg, SimpleNamespace(text=json.dumps(fake))]))
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertIsNone(keuze["aan"])
+        self.assertEqual(koning.run.await_count, 2)
+
+        fake["bronaanwijzing"]["citaat"] = debat[-1]["tekst"]
+        koning.run = AsyncMock(return_value=SimpleNamespace(text=json.dumps(fake)))
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertEqual(keuze["aan"], "archmage")
+        self.assertEqual(keuze["bronaanwijzing"], fake["bronaanwijzing"])
+        koning.run.assert_awaited_once()
+
+        fake["aan"] = "historian"
+        koning.run = AsyncMock(side_effect=[
+            SimpleNamespace(text=json.dumps(fake)), routering(None, None, None),
+        ])
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertIsNone(keuze["aan"])
+        self.assertEqual(koning.run.await_count, 2)

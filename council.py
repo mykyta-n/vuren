@@ -38,11 +38,15 @@ OPENINGSVRAGEN = [
     "Welk tijdspatroon bevestigen de waarnemingen?",
 ]
 MAX_VERVOLG_PER_DOEL = 2
+BRONAANWIJZING_NA_BEURTEN = 6
 VERVOLGVRAGEN = {
     "mechanisme": OPENINGSVRAGEN[1],
     "verloop": OPENINGSVRAGEN[2],
     "ingreep": OPENINGSVRAGEN[0],
-    "herstel": "Welke gedocumenteerde herstelstap is omkeerbaar, en wat moet vóór die stap veiliggesteld of gecontroleerd worden?",
+    "herstel": (
+        "Wat kun je volgens je eigen bron aanpassen om de werking te herstellen, "
+        "en wat moet eerst veiliggesteld worden? Maak onderscheid tussen een proef en het daadwerkelijke herstel."
+    ),
     "tegenbewijs": "Welke eigen waarneming kan de best onderbouwde verklaring ontkrachten?",
 }
 ROUTERINGSPROMPT = """Leid als Koning de volgende stap in het onderzoek naar de Desync.
@@ -53,6 +57,7 @@ Herzie open_vragen op basis van de laatste bijdragen. Bundel verwante vragen en 
 bij die de oorzaak, het verloop of het herstelplan kunnen veranderen. Sluit een vraag pas als een bijdrage
 met record-ID's haar beantwoordt.
 Voeg een vraag toe als bronnen botsen of een redenering een gat heeft. Vergelijk dagen en tijden expliciet.
+Verschillende tijden voor verschillende gebeurtenissen vormen op zichzelf geen tegenspraak.
 Onderscheid wanneer een gebeurtenis plaatsvond, werd waargenomen en werd vastgelegd. Laat bij een afwijking
 de Historian de tijdvelden en de manier van vastleggen controleren voordat je de volgorde vaststelt.
 Geef voorrang aan onbewezen delen van de oorzaak boven extra details bij een al onderbouwde deelclaim.
@@ -78,26 +83,33 @@ Beperk vragen naar dezelfde gebeurtenis en hetzelfde tijdvenster zodra de bronne
 Gebruik spoor voor één concrete kwestie, met hetzelfde label als die al in gestelde_vragen staat. Controleer
 brongaten: kies alleen een andere Rol als diens eigen bron deze kwestie mogelijk wél kan toetsen.
 Leg in één korte zin uit welk debatbericht of welk open spoor de keuze motiveert.
+Als bronaanwijzing_verplicht waar is, ga alleen door als een debatbijdrage concrete aanwijzingen geeft
+dat de beoogde bron het gevraagde verschijnsel en tijdvenster kan toetsen. Citeer die aanwijzing letterlijk
+met record-ID in bronaanwijzing: {"nr": debatbeurtnummer, "citaat": "korte letterlijke passage"}.
+Een terugkeer naar een Raadslid vereist een nieuwe aanwijzing uit de bijdrage van een ander Raadslid.
+Een citaat dat de vraag al beantwoordt is geen reden voor een vervolgbeurt.
+Leg in reden uit wat de waarneming aan het Verdict zou veranderen. Stop als die aanwijzing ontbreekt.
 
 Na bijdragen met bronverwijzingen van minimaal drie Rollen mag je stoppen als genoeg onderzocht is
 voor een onderbouwd Verdict, of als de beschikbare bronnen de resterende kernvragen niet kunnen toetsen.
 Noem in je stopreden welk bewijs is verzameld en welke waarneming eventueel ontbreekt.
 Gebruik aan, vraag, doel en spoor gelijk aan null om te stoppen. Behoud onbeantwoorde vragen in open_vragen.
 Als er geen beurten meer over zijn, stop dan en behoud de open vragen.
-Geef één JSON-object zonder extra tekst, met uitsluitend deze velden: aan (rolnaam of null),
+Geef één JSON-object zonder extra tekst, met deze velden: aan (rolnaam of null),
 vraag (tekst of null), doel (sleutel uit rollen_per_vervolgdoel of null), spoor (kort label of null), reden (tekst) en open_vragen
-(lijst van korte vragen). Richt je op maximaal 120 woorden totaal.
+(lijst van korte vragen). Voeg bronaanwijzing alleen toe voor een vervolg waarvoor die verplicht is.
+Richt je op maximaal 120 woorden totaal.
 """
 
 
-def lees_routering(tekst, rollen_per_doel, stop_mogelijk, budget_op, vorige_routeringen, brongaten):
+def lees_routering(tekst, rollen_per_doel, stop_mogelijk, budget_op, vorige_routeringen, brongaten, bronaanwijzingen=None):
     """Valideer een modelkeuze voordat de loop die uitvoert of opslaat."""
     tekst = (tekst or "").strip()
     begin = tekst.find("{")
     if begin < 0:
         raise ValueError("geen JSON-object")
     keuze, _ = json.JSONDecoder().raw_decode(tekst, begin)
-    if not isinstance(keuze, dict) or keuze.keys() != {"aan", "vraag", "doel", "spoor", "reden", "open_vragen"}:
+    if not isinstance(keuze, dict) or keuze.keys() - {"bronaanwijzing"} != {"aan", "vraag", "doel", "spoor", "reden", "open_vragen"}:
         raise ValueError("ongeldige routeringsvelden")
 
     rol, vraag, reden, open_vragen = (keuze[k] for k in ("aan", "vraag", "reden", "open_vragen"))
@@ -105,6 +117,7 @@ def lees_routering(tekst, rollen_per_doel, stop_mogelijk, budget_op, vorige_rout
         raise ValueError("geen reden")
     if not isinstance(open_vragen, list) or any(not isinstance(v, str) or not v.strip() for v in open_vragen):
         raise ValueError("ongeldige open vragen")
+    aanwijzing = None
     if rol is None:
         if any(keuze[key] is not None for key in ("vraag", "doel", "spoor")) or (not budget_op and not stop_mogelijk):
             raise ValueError("onvoldoende basis om te stoppen")
@@ -122,8 +135,24 @@ def lees_routering(tekst, rollen_per_doel, stop_mogelijk, budget_op, vorige_rout
             raise ValueError("dit spoor leverde bij deze of twee andere Rollen geen bruikbaar bewijs op")
         if any(r["aan"] == rol and r["vraag"].strip().casefold() == vraag.strip().casefold() for r in vorige_routeringen):
             raise ValueError("deze vraag is al aan deze Rol gesteld")
+        if bronaanwijzingen is not None:
+            basis = keuze.get("bronaanwijzing")
+            nummer = basis.get("nr") if isinstance(basis, dict) else None
+            passage = basis.get("citaat") if isinstance(basis, dict) else None
+            if type(nummer) is not int or not isinstance(passage, str):
+                raise ValueError("vervolg vereist een letterlijke bronaanwijzing met beurt en record-ID")
+            citaat = " ".join(passage.split())
+            bijdrage = bronaanwijzingen.get(nummer, {})
+            bron = RECORD_ID.sub(r"\1-\2", " ".join(bijdrage.get("tekst", "").split()))
+            genormaliseerd = RECORD_ID.sub(r"\1-\2", citaat)
+            inhoud = RECORD_ID.sub("", citaat)
+            if not RECORD_ID.search(citaat) or genormaliseerd not in bron or not re.search(r"[^\W\d_]", inhoud):
+                raise ValueError("bronaanwijzing staat niet met record-ID in de opgegeven bijdrage")
+            if bijdrage["spreker"] == rol:
+                raise ValueError("herhaalvraag vereist een bronaanwijzing van een ander Raadslid")
+            aanwijzing = {"nr": nummer, "citaat": citaat}
 
-    return {
+    route = {
         "aan": rol,
         "vraag": vraag.strip() if vraag else None,
         "doel": keuze["doel"],
@@ -131,6 +160,9 @@ def lees_routering(tekst, rollen_per_doel, stop_mogelijk, budget_op, vorige_rout
         "reden": reden.strip(),
         "open_vragen": list(dict.fromkeys(v.strip() for v in open_vragen)),
     }
+    if aanwijzing is not None:
+        route["bronaanwijzing"] = aanwijzing
+    return route
 
 
 def nieuwe_eigen_records(debat):
@@ -208,7 +240,10 @@ def gerichte_bronvraag(debat, rollen, gesproken, onderbouwd, open_vragen, vervol
         return {
             "aan": "guardian_keeper",
             "spoor": "schildontwerp en afwijkende opening",
-            "vraag": "Welke regel in je schildspecificatie verklaart een afwijkende opening, en welk gedateerd wachtrapport kun je daarmee vergelijken?",
+            "vraag": (
+                "Welke regel in je schildspecificatie verklaart een afwijkende opening, en welk gedateerd wachtrapport kun je daarmee vergelijken? "
+                "Zoek de opening ook op datum en tijd in je wachtrapportentabel. Benoem welk bestand je echt hebt gecontroleerd."
+            ),
             "reden": f"Bijdrage #{bijdrage['nr']} geeft een eerste spoor uit het datanet. De schildspecificatie kan een toetsbare schakel leveren.",
             "open_vragen": open_vragen,
         }
@@ -217,7 +252,12 @@ def gerichte_bronvraag(debat, rollen, gesproken, onderbouwd, open_vragen, vervol
         return {
             "aan": "historian",
             "spoor": "ontwerp- en herstelregel in het archief",
-            "vraag": "Welke ontwerp- of herstelregel uit je archief kan het gemelde schildgedrag in verband brengen met de wijziging aan het datanet?",
+            "vraag": (
+                "Welke ontwerpregel en welke herstelregel geeft je archief voor de tijdvoorziening die in het debat wordt genoemd? "
+                "Zoek op de naam van die tijdvoorziening. Lees de toepasselijke archiefpassages als gericht zoeken niets oplevert. "
+                "Citeer elke gevonden regel met de voorwaarden en de datum van vastlegging. "
+                "Geef apart aan of de archieftekst de gemelde gebeurtenissen zelf noemt."
+            ),
             "reden": f"Bijdrage #{bijdrage['nr']} beschrijft schildgedrag. Een historische ontwerpregel kan toetsen hoe de betrokken systemen samenhangen.",
             "open_vragen": open_vragen,
         }
@@ -244,7 +284,11 @@ def gerichte_bronvraag(debat, rollen, gesproken, onderbouwd, open_vragen, vervol
         bijdrage = next(b for b in reversed(debat) if b["spreker"] == "oracle")
         return {
             "aan": "beast_master",
-            "vraag": f"Welke gedateerde dierwaarnemingen bevestigen of tegenspreken de regelmaat uit bijdrage #{bijdrage['nr']}?",
+            "vraag": (
+                f"Welke gedateerde dierwaarnemingen bevestigen of tegenspreken de regelmaat uit bijdrage #{bijdrage['nr']}? "
+                "Controleer de waarnemingsdagen in je dierenlogboektabel én je veldnotities. Onderscheid een niet gecontroleerde dag, "
+                "een gecontroleerde dag zonder record en een rustige waarneming. Een rustige dag buiten het ritme is geen tegenvoorbeeld."
+            ),
             "doel": "verloop",
             "spoor": "onafhankelijke toets van het dagboekpatroon",
             "reden": "Het dagboek geeft een tijdreeks. Het dierenlogboek kan die regelmaat onafhankelijk toetsen.",
@@ -302,6 +346,9 @@ async def kies_volgende(koning, debat, beurten, leden):
     }
     rollen_per_doel = {doel: kandidaten for doel, kandidaten in rollen_per_doel.items() if kandidaten}
     brongaten = ontbrekend_bronbewijs(beurten)
+    bronaanwijzingen = None
+    if stop_mogelijk and len(debat) >= BRONAANWIJZING_NA_BEURTEN:
+        bronaanwijzingen = {b["nr"]: b for b in debat if b["spreker"] in onderbouwd}
     context = {
         "rollen": {lid.ROL: lid.PERSPECTIEF for lid in leden},
         "rollen_per_vervolgdoel": rollen_per_doel,
@@ -310,6 +357,7 @@ async def kies_volgende(koning, debat, beurten, leden):
         "open_vragen": open_vragen,
         "gestelde_vragen": [{key: b.get(key) for key in ("aan", "vraag", "doel", "spoor")} for b in vorige_routeringen],
         "brongaten": {spoor: sorted(rollen) for spoor, rollen in brongaten.items()},
+        "bronaanwijzing_verplicht": bronaanwijzingen is not None,
         "debat": [{**b, "nieuwe_eigen_record_ids": nieuwe_records[b["nr"]]} for b in debat],
     }
     prompt = ROUTERINGSPROMPT + "\nInput:\n" + json.dumps(context, ensure_ascii=False)
@@ -321,7 +369,8 @@ async def kies_volgende(koning, debat, beurten, leden):
             print(f"[Routering] Modeloproep mislukt: {type(fout).__name__}", file=sys.stderr)
             break
         try:
-            keuze = lees_routering(antwoord.text, rollen_per_doel, stop_mogelijk, resterend == 0, vorige_routeringen, brongaten)
+            keuze = lees_routering(antwoord.text, rollen_per_doel, stop_mogelijk, resterend == 0,
+                                   vorige_routeringen, brongaten, bronaanwijzingen)
         except ValueError as fout:
             print(f"[Routering] Ongeldige modelkeuze: {fout}", file=sys.stderr)
             herstel = f"\nHerstel je vorige keuze ({fout}). Geef uitsluitend het JSON-object op één regel en houd alle velden kort."
@@ -334,10 +383,10 @@ async def kies_volgende(koning, debat, beurten, leden):
         for doel, kandidaten in rollen_per_doel.items() if len(brongaten.get(doel, ())) < 2
     }
     fallback_doelen = {doel: kandidaten for doel, kandidaten in fallback_doelen.items() if kandidaten}
-    if resterend == 0 or (stop_mogelijk and not fallback_doelen):
+    if resterend == 0 or bronaanwijzingen is not None or (stop_mogelijk and not fallback_doelen):
         return {
             "aan": None, "vraag": None, "doel": None, "spoor": None,
-            "reden": (f"Beurtenbudget op ({BEURTENBUDGET} Raadslid-beurten)." if resterend == 0 else "Geen beschikbaar vervolgdoel.")
+            "reden": (f"Beurtenbudget op ({BEURTENBUDGET} Raadslid-beurten)." if resterend == 0 else "Geen onderbouwde vervolgkeuze.")
             + " De resterende vragen blijven open.",
             "open_vragen": open_vragen,
         }
@@ -523,8 +572,9 @@ async def run():
     # De Koning heeft geen Rol en geen Kennisbron: hij kent alleen wat de Raadsleden inbrachten.
     trace["aan_het_woord"] = "koning"
     bewaar("trace.json", trace)
+    review_log = []
     try:
-        verdict, geschillen = await build_verdict(koning, debat, run_id)
+        verdict, geschillen = await build_verdict(koning, debat, run_id, review_log=review_log)
     except (ValueError, AgentInvalidResponseException, ChatClientException) as fout:
         trace["status"], trace["aan_het_woord"] = "mislukt", None
         trace["verdict_fout"] = {
@@ -532,10 +582,14 @@ async def run():
             "type": type(fout).__name__,
             "oorzaak": type(fout.__cause__).__name__ if fout.__cause__ else None,
         }
+        if review_log:
+            trace["verdict_broncontrole"] = review_log
         bewaar("trace.json", trace)
         raise
 
     trace["verdict_finalisatie"] = verdict.get("finalisatie", "volledig")
+    if review_log:
+        trace["verdict_broncontrole"] = review_log
     trace["geschillen"] = geschillen
     beurt(ronde + 1, "koning", "bericht", tekst=verdict["samenvatting"])
     bewaar("verdict.json", verdict)
