@@ -1,0 +1,79 @@
+{
+  "run_id": "2026-11-24T14:32:05+01:00_3f2a9c1e",
+  "raadsleden": ["molenaar", "boswachter"],
+  "beurten": [
+    {
+      "nr": 1,
+      "ronde": 1,
+      "spreker": "molenaar",
+      "soort": "toolcall",
+      "tool": "zoek",
+      "argumenten": { "term": "rad" },
+      "pad": "https://<host>/molenaar/mcp"
+    },
+    {
+      "nr": 2,
+      "ronde": 1,
+      "spreker": "molenaar",
+      "soort": "bericht",
+      "tekst": "Het rad haalt sinds dag 4 zijn toerental niet meer (MOL-007). Het is oud; ik denk dat het versleten is."
+    },
+    {
+      "nr": 3,
+      "ronde": 1,
+      "spreker": "boswachter",
+      "soort": "toolcall",
+      "tool": "zoek_betekenis",
+      "argumenten": { "vraag": "werken aan de beek", "aantal": 5 },
+      "pad": "https://<host>/boswachter/mcp"
+    },
+    {
+      "nr": 4,
+      "ronde": 1,
+      "spreker": "boswachter",
+      "soort": "bericht",
+      "tekst": "Op dag 4 heb ik de beek omgelegd naar de nieuwe bevervijver (BOS-012, BOS-013). Dat kan het rad minder water geven."
+    },
+    {
+      "nr": 5,
+      "ronde": 2,
+      "spreker": "molenaar",
+      "soort": "toolcall",
+      "tool": "toon",
+      "argumenten": { "ids": ["MOL-003", "MOL-021"] },
+      "pad": "https://<host>/molenaar/mcp"
+    },
+    {
+      "nr": 6,
+      "ronde": 2,
+      "spreker": "molenaar",
+      "soort": "bericht",
+      "tekst": "Klopt: de schoepen zijn op dag 1 nog vervangen (MOL-003) en het peil aan het rad zakte vanaf dag 4 (MOL-021). Niet versleten dus."
+    },
+    {
+      "nr": 7,
+      "ronde": 2,
+      "spreker": "mens",
+      "soort": "bericht",
+      "tekst": "Kijk ook naar het patroon per dag, niet alleen naar dag 4."
+    },
+    {
+      "nr": 8,
+      "ronde": 3,
+      "spreker": "koning",
+      "soort": "bericht",
+      "tekst": "Besluit: omgelegde beek als oorzaak. Het patroon per dag is niet onderbouwd, dus 'verloop' blijft open."
+    }
+  ],
+  "geschillen": [
+    {
+      "onderwerp": "Is het rad versleten?",
+      "standpunten": {
+        "molenaar": "Het rad is oud en versleten.",
+        "boswachter": "De beek is omgelegd; het rad krijgt minder water."
+      },
+      "uitkomst": "Niet versleten: de schoepen zijn nieuw en het peil zakte pas na het omleggen.",
+      "bewijs": ["MOL-003", "MOL-021", "BOS-012"]
+    }
+  ]
+}

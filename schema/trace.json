@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Debat-trace",
+  "description": "Ongewijzigde uitvoer van de run die het Council Verdict maakte: wie wie aan het woord liet en waarom (routering), wie wat inbracht, welke bronnen werden gelezen en hoe geschillen werden beslecht. Extra velden mogen.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "raadsleden",
+    "beurten",
+    "geschillen"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Zelfde waarde als in verdict.json van dezelfde run."
+    },
+    "raadsleden": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/rol"
+      }
+    },
+    "beurten": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/beurt"
+      }
+    },
+    "geschillen": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/geschil"
+      }
+    }
+  },
+  "$defs": {
+    "rol": {
+      "enum": [
+        "archmage",
+        "engineer",
+        "guardian_keeper",
+        "historian",
+        "oracle",
+        "beast_master"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^(ARC|ENG|GUA|HIS|ORA|BEA)-[0-9]{3}$"
+    },
+    "beurt": {
+      "type": "object",
+      "required": [
+        "nr",
+        "ronde",
+        "spreker",
+        "soort"
+      ],
+      "properties": {
+        "nr": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ronde": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spreker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/rol"
+            },
+            {
+              "enum": [
+                "koning",
+                "mens"
+              ]
+            }
+          ]
+        },
+        "soort": {
+          "enum": [
+            "bericht",
+            "toolcall",
+            "bestand",
+            "routering"
+          ]
+        },
+        "aan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/rol"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Bij een routering: aan welke Rol de beurt gaat; null = de Koning stopt het debat."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "soort": {
+                "const": "bericht"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "tekst"
+            ],
+            "properties": {
+              "tekst": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "soort": {
+                "const": "toolcall"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "tool",
+              "argumenten",
+              "pad"
+            ],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "minLength": 1
+              },
+              "argumenten": {
+                "type": "object"
+              },
+              "pad": {
+                "type": "string",
+                "description": "MCP-pad, bv. https://<host>/oracle/mcp."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "soort": {
+                "const": "bestand"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "bestand"
+            ],
+            "properties": {
+              "bestand": {
+                "type": "string",
+                "description": "Kennisbron-bestand dat in de prompt ging (fallback zonder MCP), bv. oracle/visioenendagboek.md."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "soort": {
+                "const": "routering"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "aan",
+              "vraag",
+              "reden"
+            ],
+            "properties": {
+              "vraag": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "De vraag aan die Rol; null als het debat stopt."
+              },
+              "reden": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Waarom de Koning deze keuze maakt."
+              },
+              "open_vragen": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optioneel (Extra uitdaging): de open vragen van de Koning na deze keuze."
+              }
+            }
+          }
+        }
+      ]
+    },
+    "geschil": {
+      "type": "object",
+      "required": [
+        "onderwerp",
+        "standpunten",
+        "uitkomst",
+        "bewijs"
+      ],
+      "properties": {
+        "onderwerp": {
+          "type": "string",
+          "minLength": 1
+        },
+        "standpunten": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "$ref": "#/$defs/rol"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "uitkomst": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "bewijs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        }
+      },
+      "if": {
+        "properties": {
+          "uitkomst": {
+            "type": "string"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "bewijs": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}

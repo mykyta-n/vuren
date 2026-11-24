@@ -1,0 +1,35 @@
+{
+  "run_id": "2026-11-24T14:32:05+01:00_3f2a9c1e",
+  "samenvatting": "De molen draait traag sinds dag 4 omdat de boswachter de molenbeek omlegde naar een nieuwe bevervijver. Het rad is niet versleten.",
+  "oorzaak": {
+    "ingreep": {
+      "bewering": "Op dag 4 legde de boswachter de molenbeek om naar de nieuwe bevervijver.",
+      "bewijs": ["BOS-012", "BOS-013"]
+    },
+    "mechanisme": {
+      "bewering": "Minder water op het rad: het draait onder het minimumtoerental, waardoor de maalstenen haken.",
+      "bewijs": ["MOL-007", "MOL-021"]
+    },
+    "verloop": {
+      "bewering": null,
+      "bewijs": []
+    }
+  },
+  "acties": [
+    {
+      "actie": "Het graan in de molen droog stockeren tot het rad weer op toerental draait.",
+      "reden": "Haperende stenen verbranden het meel; wat nu gemalen wordt, gaat verloren."
+    },
+    {
+      "actie": "De beek in stappen terugleiden en de vijver via een overloop blijven voeden.",
+      "reden": "Zo krijgt het rad weer water zonder dat de bevers hun vijver verliezen.",
+      "bewijs": ["BOS-013"]
+    }
+  ],
+  "risicos": [
+    {
+      "risico": "De bevervijver in één keer afdammen.",
+      "mitigatie": "Geleidelijk terugleiden en een overloop houden; de boswachter volgt de bevers op."
+    }
+  ]
+}

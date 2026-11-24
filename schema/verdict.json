@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Council Verdict",
+  "description": "Eindbeslissing van een Council: oorzaak (3 slots met bewijs), acties en risico's. Extra velden mogen.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "samenvatting",
+    "oorzaak",
+    "acties",
+    "risicos"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Zelfde waarde als in trace.json van dezelfde run."
+    },
+    "samenvatting": {
+      "type": "string",
+      "minLength": 1
+    },
+    "oorzaak": {
+      "type": "object",
+      "required": [
+        "ingreep",
+        "mechanisme",
+        "verloop"
+      ],
+      "properties": {
+        "ingreep": {
+          "$ref": "#/$defs/slot",
+          "description": "Wie deed wat, wanneer."
+        },
+        "mechanisme": {
+          "$ref": "#/$defs/slot",
+          "description": "Hoe leidt dat tot de symptomen."
+        },
+        "verloop": {
+          "$ref": "#/$defs/slot",
+          "description": "Wat toont het patroon in de tijd."
+        }
+      }
+    },
+    "acties": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Herstelplan. De volgorde in de lijst is de uitvoeringsvolgorde.",
+      "items": {
+        "type": "object",
+        "required": [
+          "actie",
+          "reden"
+        ],
+        "properties": {
+          "actie": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reden": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bewijs": {
+            "$ref": "#/$defs/bewijs"
+          }
+        }
+      }
+    },
+    "risicos": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "risico",
+          "mitigatie"
+        ],
+        "properties": {
+          "risico": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mitigatie": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "voorspelling": {
+      "type": "object",
+      "description": "Optioneel (Extra uitdaging): wanneer slaat de Desync opnieuw toe als niemand ingrijpt?",
+      "required": [
+        "dag",
+        "bewering",
+        "bewijs"
+      ],
+      "properties": {
+        "dag": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bewering": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bewijs": {
+          "$ref": "#/$defs/bewijs"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^(ARC|ENG|GUA|HIS|ORA|BEA)-[0-9]{3}$"
+    },
+    "bewijs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id"
+      },
+      "uniqueItems": true
+    },
+    "slot": {
+      "type": "object",
+      "required": [
+        "bewering",
+        "bewijs"
+      ],
+      "properties": {
+        "bewering": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "null = eerlijk onbekend."
+        },
+        "bewijs": {
+          "$ref": "#/$defs/bewijs"
+        },
+        "zekerheid": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Optioneel (Extra uitdaging): zekerheid van dit deel, 0-1."
+        }
+      },
+      "if": {
+        "properties": {
+          "bewering": {
+            "type": "string"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "bewijs": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}
