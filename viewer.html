@@ -5,8 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Council-debatviewer</title>
 <style>
+  @font-face {
+    font-family: "Pixelify Sans";
+    src: url("pixelify-sans.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+  }
   :root {
     color-scheme: dark;
+    --pixel: "Pixelify Sans", ui-monospace, monospace;
     --bg: #101416; --paneel: #181e20; --tekst: #f2ebdc; --zacht: #b6b8af; --lijn: #343b3b;
     --waarschuwing: #e3b86c; --fout: #ff9694; --ok: #a7d398;
     --archmage: #bba7fa; --engineer: #edb779; --guardian_keeper: #91c0df; --historian: #e6c598;
@@ -14,16 +22,34 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--tekst); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body {
+    background:
+      linear-gradient(180deg, #10151e40, #101416b5 72%),
+      repeating-linear-gradient(0deg, #293441 0 1px, transparent 1px 18px),
+      conic-gradient(from 90deg at 1px 50%, transparent 90deg, #293441 0 180deg, transparent 0) 0 0 / 56px 36px,
+      conic-gradient(from 180deg at 1px 50%, transparent 90deg, #293441 0 180deg, transparent 0) 28px 0 / 56px 36px,
+      #171e29;
+  }
   header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 28px 0 18px; }
+  .titelgroep { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 17px; }
+  .team { margin: 0; font-size: 12px; color: #c8cad3; }
+  .team b { color: #f4ce79; font-weight: 600; }
   .bediening { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  button { cursor: pointer; font: inherit; font-weight: 650; color: var(--tekst); background: #2d2520; border: 1px solid #785d36; border-radius: 7px; padding: 7px 12px; }
-  button:hover { background: #473624; }
+  button {
+    --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
+    position: relative; isolation: isolate; cursor: pointer; border: 0; background: none; color: #fff1d9;
+    font: 600 15px/1.2 var(--pixel); padding: 9px 17px 13px;
+  }
+  button::before, button::after { content: ""; position: absolute; inset: 0; clip-path: var(--schild); z-index: -1; }
+  button::before { background: #aa834a; }
+  button::after { inset: 2px; background: linear-gradient(160deg, #354050, #22252d 70%); }
+  button:hover::after { background: linear-gradient(160deg, #505f70, #2a303a 70%); }
   button:focus-visible, #debat:focus-visible { outline: 2px solid var(--koning); outline-offset: 3px; }
   .dossier { position: fixed; inset: 0 0 0 auto; margin: 0; height: 100%; max-height: none; width: min(850px, 100%); max-width: none; border: 0; border-left: 1px solid var(--lijn); color: var(--tekst); background: var(--bg); padding: 0 18px 18px; overflow: auto; }
   .dossier::backdrop { background: #080a0bb3; }
   .dossierkop { position: sticky; top: 0; display: flex; gap: 12px; align-items: center; justify-content: space-between; background: var(--bg); border-bottom: 1px solid var(--lijn); padding: 14px 0 10px; margin-bottom: 12px; z-index: 1; }
   .dossierkop h2 { font: 600 24px Georgia, serif; margin: 0; }
-  header h1 { font: 600 clamp(30px, 5vw, 50px)/1.1 Georgia, serif; letter-spacing: -.035em; margin: 0; }
+  header h1 { font: 700 clamp(30px, 4.7vw, 48px)/1 var(--pixel); margin: 0; text-shadow: 2px 3px #080a11; }
   .pil { font-size: 13px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--lijn); background: var(--paneel); }
   .pil.bezig { border-color: var(--waarschuwing); color: var(--waarschuwing); }
   .pil.klaar { border-color: var(--ok); color: var(--ok); }
@@ -35,7 +61,7 @@
   .raadskaart { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
   .zitplaats { position: absolute; left: var(--x); top: var(--y); translate: -50% -100%; width: 8.5%; text-align: center; color: var(--rolkleur); }
   .sprite { display: block; aspect-ratio: .5; background: url(council-cast.png) var(--frame) 50% / 400% 100% no-repeat; image-rendering: pixelated; }
-  .naamplaat { position: absolute; top: 100%; left: 50%; translate: -50% 0; background: #141416e8; border: 1px solid #80705a; border-radius: 3px; padding: 1px 5px; font: 650 clamp(9px, 1.1vw, 14px)/1.5 system-ui, sans-serif; white-space: nowrap; }
+  .naamplaat { position: absolute; top: 89%; left: 50%; translate: -50% 0; background: #141416e8; border: 1px solid #80705a; border-radius: 3px; padding: 1px 5px; font: 600 clamp(9px, 1.25vw, 15px)/1.25 var(--pixel); white-space: nowrap; }
   .zitplaats[aria-current="true"] .naamplaat { border-color: currentColor; box-shadow: 0 0 10px currentColor; }
   .zitplaats[aria-current="true"] .sprite { animation: spreek 1.15s steps(1, end) infinite; filter: drop-shadow(0 0 5px var(--rolkleur)); }
   .zitplaats.wijst .sprite { animation: wijs 700ms steps(2, end); filter: drop-shadow(0 0 7px var(--koning)); }
@@ -88,7 +114,10 @@
 <body>
 <div class="pagina">
 <header>
-  <h1>Council of Achrona</h1>
+  <div class="titelgroep">
+    <h1>Council of Achrona</h1>
+    <p class="team">Mykyta Nabokov &amp; Dmytro Busha · <b>Team Vuren</b></p>
+  </div>
   <div class="bediening">
     <span id="status" class="pil">Wacht op debat</span>
     <button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>
