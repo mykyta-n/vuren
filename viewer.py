@@ -1,6 +1,6 @@
-"""Debatviewer: toont trace.json en verdict.json live in je browser.
+"""Debatviewer: speel een opgeslagen debat af in je browser.
 
-Start met `uv run viewer` (leest de root van deze repo) of `uv run viewer <map-of-trace.json>`.
+Start met `uv run viewer` (leest demo/pitch) of `uv run viewer <map-of-trace.json>`.
 Poort via VIEWER_PORT (standaard 8100).
 """
 import http.server
@@ -16,7 +16,7 @@ MEDIA_TYPES = {".png": "image/png", ".ttf": "font/ttf"}
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
-    doel = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT
+    doel = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "demo" / "pitch"
     map_ = doel.parent if doel.is_file() else doel
     port = int(os.getenv("VIEWER_PORT", "8100"))
 

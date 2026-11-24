@@ -39,8 +39,18 @@
   .titelpijl { height: clamp(12px, 2.3vw, 27px); background: linear-gradient(#f5d692, #af773e 51%, #e2aa57 52%, #7f522e); }
   .titelpijl.veren { clip-path: polygon(0 8%, 20% 8%, 33% 44%, 100% 44%, 100% 59%, 33% 59%, 20% 93%, 0 93%, 13% 53%); }
   .titelpijl.punt { clip-path: polygon(0 44%, 76% 44%, 76% 10%, 100% 51%, 76% 91%, 76% 59%, 0 59%); }
-  .zaalbediening { display: flex; flex: 1; align-items: center; justify-content: center; padding: 18px 0; }
-  #open-dossier { min-width: min(100%, 290px); padding: 15px 29px 22px; font-size: clamp(18px, 2.1vw, 23px); }
+  .zaalbediening {
+    display: grid; flex: 1; align-content: center; align-items: center; justify-content: center;
+    grid-template-columns: 44px minmax(0, 290px) 44px; gap: 0 clamp(6px, 2vw, 16px); padding: 18px 0;
+  }
+  #replay-vorige { grid-column: 1; }
+  #replay-volgende { grid-column: 3; }
+  .replay-pijl { grid-row: 1; font-size: 24px; padding: 6px 0 10px; }
+  .zaalbediening button:disabled { opacity: .42; cursor: default; }
+  #open-dossier {
+    grid-column: 2; grid-row: 1; padding: 15px clamp(6px, 2vw, 29px) 22px; font-size: clamp(18px, 2.1vw, 23px);
+  }
+  .replay-status { grid-column: 1 / -1; margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--zacht); }
   button {
     --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
     position: relative; isolation: isolate; cursor: pointer; border: 0; background: none; color: #fff1d9;
@@ -76,6 +86,18 @@
   .kamer { margin: 0 auto; border: 1px solid #534534; border-radius: 12px; overflow: hidden; background: #1a1717; }
   .toneel { position: relative; isolation: isolate; background: #181a20; }
   .zaal { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+  .poort {
+    position: absolute; inset: 0; z-index: 6; display: flex; overflow: hidden;
+    pointer-events: none; perspective: 1000px;
+  }
+  .poortdeel {
+    width: 50%; background: #301e16 url(assets/council-gate.png) left center / 200% 100% no-repeat;
+    transition: transform 1.55s cubic-bezier(.4, 0, .2, 1);
+  }
+  .poortdeel.links { transform-origin: left center; }
+  .poortdeel.rechts { background-position: right center; transform-origin: right center; }
+  .poort.open .links { transform: translateX(-102%) rotateY(-18deg); }
+  .poort.open .rechts { transform: translateX(102%) rotateY(18deg); }
   .zaallicht { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
   .torengloed {
     position: absolute; left: 51.2%; top: 16%; width: 27%; height: 35%; translate: -50% -45%;
@@ -259,6 +281,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .sprite, .spreekwolk, .koningsrol, .perkament, .vlam, .torengloed, .torenring { animation: none !important; }
+    .poortdeel { transition: none; }
     .vlam, .torengloed { opacity: .3; }
     .torenring { display: none; }
   }
@@ -302,7 +325,7 @@
       <span class="vlam" style="--licht-x:4.3%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-.6s"></span>
       <span class="vlam" style="--licht-x:95.6%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-2s"></span>
     </div>
-    <ul class="raadskaart" aria-label="Zitplaatsen van de Raad">
+    <ul class="raadskaart" inert aria-label="Zitplaatsen van de Raad">
       <li class="zitplaats nieuw-raadslid" data-rol="archmage" style="--rolkleur:var(--archmage);--x:26%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Archmage</span></li>
       <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:38%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Engineer</span></li>
       <li class="zitplaats troon" data-rol="koning" style="--rolkleur:var(--koning);--x:50%;--y:48.5%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Koning</span><button id="open-verdictrol" class="koningsrol" type="button" aria-haspopup="dialog" aria-label="Open de verdictrol" title="Open de verdictrol" hidden><span class="rol-greep" aria-hidden="true"></span></button></li>
@@ -311,10 +334,14 @@
       <li class="zitplaats zijplaats links" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:12%;--y:65%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Beast Master</span></li>
       <li class="zitplaats nieuw-raadslid zijplaats rechts" data-rol="guardian_keeper" style="--rolkleur:var(--guardian_keeper);--x:88%;--y:65%;--frame:100%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Guardian Keeper</span></li>
     </ul>
+    <div class="poort" aria-hidden="true"><span class="poortdeel links"></span><span class="poortdeel rechts"></span></div>
   </div>
 </figure>
 <div class="zaalbediening">
-  <button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>
+  <button id="replay-vorige" class="replay-pijl" type="button" aria-label="Vorige stap" hidden>&lt;</button>
+  <button id="open-dossier" type="button" disabled>Start debat</button>
+  <button id="replay-volgende" class="replay-pijl" type="button" aria-label="Volgende stap" hidden>&gt;</button>
+  <p id="replay-status" class="replay-status" role="status" hidden></p>
 </div>
 <dialog id="verdictrol" class="perkament" aria-labelledby="verdictrol-titel">
   <div class="perkamentkop">
@@ -357,7 +384,6 @@ const NAMEN = { archmage: "Archmage", engineer: "Engineer", guardian_keeper: "Gu
 const BEURTENBUDGET = 10;
 const PREFIX = { ARC: "archmage", ENG: "engineer", GUA: "guardian_keeper", HIS: "historian", ORA: "oracle", BEA: "beast_master" };
 const ID_RE = /\b(ARC|ENG|GUA|HIS|ORA|BEA)([-\u2010-\u2015\u2212])(\d{3})\b/g;
-let vorige = "";
 
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const kleur = rol => `var(--${NAMEN[rol] ? rol : "koning"})`;
@@ -413,31 +439,6 @@ function ids(tekst) {
 }
 
 const plaatsen = [...document.querySelectorAll(".zitplaats")];
-const koning = plaatsen.find(plaats => plaats.dataset.rol === "koning");
-let vorigeKeuze = "";
-koning.addEventListener("animationend", event => {
-  if (event.animationName === "wijs") koning.classList.remove("wijst");
-});
-
-function renderKamer(trace, beurten, bezig) {
-  const laatste = beurten.at(-1);
-  const keuze = beurten.findLast(beurt => beurt.soort === "routering");
-  const actief = bezig ? (laatste?.soort === "routering" ? laatste.aan || "koning" : trace.aan_het_woord) : null;
-  for (const plaats of plaatsen) {
-    plaats.setAttribute("aria-current", String(plaats.dataset.rol === actief));
-  }
-  const keuzeId = keuze && `${trace.run_id}:${keuze.nr}`;
-  if (bezig && keuzeId && keuzeId !== vorigeKeuze && keuze.spreker === "koning") {
-    koning.classList.add("wijst");
-  }
-  vorigeKeuze = keuzeId;
-}
-
-let wolkRun;
-let wolkNr = 0;
-let wolkTimer;
-let wolkRij = [];
-
 function spreekwolkInhoud(beurt) {
   const kort = beurt.spreekwolk;
   if (beurt.soort === "bericht" && typeof kort?.tekst === "string" && kort.tekst.trim() && Array.isArray(kort.bewijs)) {
@@ -458,6 +459,7 @@ function spreekwolkInhoud(beurt) {
 function toonSpreekwolk(beurt) {
   for (const plaats of plaatsen) {
     plaats.classList.remove("spreekt");
+    plaats.removeAttribute("aria-current");
     plaats.querySelector(".spreekwolk")?.remove();
   }
   if (!beurt) return;
@@ -482,33 +484,8 @@ function toonSpreekwolk(beurt) {
     wolk.append(citaten);
   }
   plek.classList.add("spreekt");
+  plek.setAttribute("aria-current", "true");
   plek.append(wolk);
-}
-
-function speelWolken() {
-  toonSpreekwolk(wolkRij.shift());
-  wolkTimer = setTimeout(() => {
-    wolkTimer = undefined;
-    if (wolkRij.length) speelWolken();
-  }, 2100);
-}
-
-function planSpreekwolk(trace, beurten, bezig) {
-  if (wolkRun !== trace.run_id || !bezig) {
-    clearTimeout(wolkTimer);
-    wolkTimer = undefined;
-    wolkRij = [];
-    wolkNr = 0;
-    wolkRun = trace.run_id;
-    toonSpreekwolk(null);
-  }
-  if (!bezig) return;
-  const nieuw = beurten.filter(beurt => beurt.nr > wolkNr
-    && (beurt.soort === "bericht" || beurt.soort === "routering"));
-  if (!nieuw.length) return;
-  wolkRij.push(...(wolkNr ? nieuw : nieuw.slice(-1)));
-  wolkNr = nieuw.at(-1).nr;
-  if (!wolkTimer) speelWolken();
 }
 
 function beurtKaart(beurt, routering, bronnen, open) {
@@ -545,13 +522,8 @@ function render(trace, verdict) {
 
   // Debat per ronde
   const beurten = trace.beurten || [];
-  renderKamer(trace, beurten, bezig);
-  planSpreekwolk(trace, beurten, bezig);
   const verdictKlaar = trace.status === "klaar" && verdict?.run_id === trace.run_id
     && verdict.samenvatting?.trim() && verdict.samenvatting.trim() !== "TODO";
-  document.getElementById("open-verdictrol").hidden = !verdictKlaar;
-  const rol = document.getElementById("verdictrol");
-  if (!verdictKlaar && rol.open) rol.close();
   const debat = document.getElementById("debat");
   const zelfdeRun = debat.dataset.runId === trace.run_id;
   const openBeurten = new Set(zelfdeRun
@@ -683,26 +655,75 @@ function render(trace, verdict) {
 
 }
 
-async function haal(pad) {
-  try { const r = await fetch(pad, { cache: "no-store" }); return r.ok ? await r.text() : null; } catch { return null; }
+const dossier = document.getElementById("dossier");
+const verdictrol = document.getElementById("verdictrol");
+const hoofdknoop = document.getElementById("open-dossier");
+const vorigeStap = document.getElementById("replay-vorige");
+const volgendeStap = document.getElementById("replay-volgende");
+const replayStatus = document.getElementById("replay-status");
+const openVerdictrol = document.getElementById("open-verdictrol");
+let stappen = [];
+let stapIndex = -1;
+
+function gaNaarStap(index) {
+  if (index < 0 || index >= stappen.length || index === stapIndex) return;
+  stapIndex = index;
+  const stap = stappen[index];
+  toonSpreekwolk(stap);
+  vorigeStap.disabled = index === 0;
+  volgendeStap.disabled = index === stappen.length - 1;
+  openVerdictrol.hidden = !volgendeStap.disabled;
+  // A newly disabled arrow would otherwise drop keyboard focus.
+  if (document.activeElement === vorigeStap && vorigeStap.disabled) volgendeStap.focus();
+  if (document.activeElement === volgendeStap && volgendeStap.disabled) openVerdictrol.focus();
 }
 
-async function lus() {
-  const [t, v] = await Promise.all([haal("trace.json"), haal("verdict.json")]);
-  if (t && t + (v || "") !== vorige) {
-    try {
-      render(JSON.parse(t), v ? JSON.parse(v) : null);
-      vorige = t + (v || "");
-    } catch { /* bestand half geschreven: volgende ronde opnieuw */ }
+hoofdknoop.addEventListener("click", () => {
+  if (stapIndex >= 0) {
+    dossier.showModal();
+    return;
   }
-  setTimeout(lus, 1500);
-}
-const dossier = document.getElementById("dossier");
-document.getElementById("open-dossier").addEventListener("click", () => dossier.showModal());
-document.getElementById("open-verdictrol").addEventListener("click", () => {
-  document.getElementById("verdictrol").showModal();
+  document.querySelector(".poort").classList.add("open");
+  document.querySelector(".raadskaart").inert = false;
+  hoofdknoop.textContent = "Debat en verdict";
+  hoofdknoop.setAttribute("aria-haspopup", "dialog");
+  vorigeStap.hidden = volgendeStap.hidden = false;
+  gaNaarStap(0);
 });
-lus();
+
+vorigeStap.addEventListener("click", () => gaNaarStap(stapIndex - 1));
+volgendeStap.addEventListener("click", () => gaNaarStap(stapIndex + 1));
+openVerdictrol.addEventListener("click", () => verdictrol.showModal());
+document.addEventListener("keydown", event => {
+  if (stapIndex < 0 || dossier.open || verdictrol.open || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  event.preventDefault();
+  gaNaarStap(stapIndex + (event.key === "ArrowLeft" ? -1 : 1));
+});
+
+async function laadReplay() {
+  try {
+    const [trace, verdict] = await Promise.all(["trace.json", "verdict.json"].map(async pad => {
+      const antwoord = await fetch(pad, { cache: "no-store" });
+      if (!antwoord.ok) throw new Error(pad);
+      return antwoord.json();
+    }));
+    if (trace.status !== "klaar" || !trace.run_id || trace.run_id !== verdict.run_id
+        || !verdict.samenvatting?.trim() || verdict.samenvatting.trim() === "TODO") {
+      throw new Error("Geen afgeronde run met verdict");
+    }
+    stappen = trace.beurten.filter(beurt => plaatsen.some(plaats => plaats.dataset.rol === beurt.spreker)
+      && (beurt.soort === "bericht" && beurt.tekst?.trim()
+        || beurt.soort === "routering" && beurt.aan && beurt.vraag?.trim()));
+    if (!stappen.length) throw new Error("Geen debatstappen");
+    render(trace, verdict);
+    hoofdknoop.disabled = false;
+  } catch {
+    replayStatus.textContent = "Geen afgerond debat met verdict gevonden.";
+    replayStatus.hidden = false;
+  }
+}
+laadReplay();
 </script>
 </body>
 </html>
