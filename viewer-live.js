@@ -1,12 +1,8 @@
 const bediening = document.querySelector(".zaalbediening");
 bediening.classList.add("live");
-bediening.innerHTML = `
-<div class="zaalacties">
-    <button id="start-debat" type="button" disabled>Start debat</button>
-    <button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>
-  </div>
-  <p id="startmelding" class="startmelding" role="status"></p>
-`;
+bediening.innerHTML = '<button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>';
+document.querySelector(".poort").remove();
+document.querySelector(".raadskaart").inert = false;
 
 let vorige = "";
 const koning = plaatsen.find(plaats => plaats.dataset.rol === "koning");
@@ -64,64 +60,18 @@ async function haal(pad) {
   try { const r = await fetch(pad, { cache: "no-store" }); return r.ok ? await r.text() : null; } catch { return null; }
 }
 
-const startKnop = document.getElementById("start-debat");
-const startMelding = document.getElementById("startmelding");
-const poort = document.querySelector(".poort");
-const raadskaart = document.querySelector(".raadskaart");
-let startAanvraag = false;
-let startVersie = 0;
-let uitvoerstatus = null;
-let laatsteTrace = null;
-
-function werkStartknopBij() {
-  const gestart = uitvoerstatus && uitvoerstatus.fase !== "wacht";
-  const bezig = uitvoerstatus?.fase === "bezig";
-  const archief = !uitvoerstatus?.beschikbaar && laatsteTrace;
-  const open = Boolean(gestart || archief || laatsteTrace?.status === "bezig");
-  poort.classList.toggle("open", open);
-  raadskaart.inert = !open;
-  startKnop.disabled = startAanvraag || bezig || !uitvoerstatus?.beschikbaar;
-  startKnop.textContent = bezig ? "Debat bezig" : "Start debat";
-  startKnop.title = uitvoerstatus?.beschikbaar ? "" : "Een nieuw debat vereist een lokale projectmap met modelinstellingen.";
-  if (uitvoerstatus?.fase === "mislukt") {
-    startMelding.textContent = "Het debat is afgebroken. Controleer de viewerterminal.";
-  }
-}
-
-startKnop.addEventListener("click", async () => {
-  startAanvraag = true;
-  startVersie += 1;
-  startMelding.textContent = "";
-  werkStartknopBij();
-  try {
-    const respons = await fetch("/start-debat", { method: "POST" });
-    if (!respons.ok) throw new Error("Start mislukt");
-    uitvoerstatus = await respons.json();
-    document.getElementById("open-verdictrol").hidden = true;
-  } catch {
-    startMelding.textContent = "Het debat kon niet worden gestart. Controleer de viewerterminal.";
-  } finally {
-    startAanvraag = false;
-    werkStartknopBij();
-  }
-});
-
 async function lus() {
-  const versie = startVersie;
-  const [t, v, r] = await Promise.all([haal("trace.json"), haal("verdict.json"), haal("/run-status")]);
+  const [t, v] = await Promise.all([haal("trace.json"), haal("verdict.json")]);
   try {
-    if (!startAanvraag && versie === startVersie) uitvoerstatus = r ? JSON.parse(r) : null;
-    laatsteTrace = t ? JSON.parse(t) : null;
-    werkStartknopBij();
-    const wachtOpNieuweTrace = uitvoerstatus?.fase === "bezig" && laatsteTrace?.run_id === uitvoerstatus.vorige_run;
-    if (laatsteTrace && !wachtOpNieuweTrace && t + (v || "") !== vorige) {
+    if (t && t + (v || "") !== vorige) {
+      const trace = JSON.parse(t);
       const verdict = v ? JSON.parse(v) : null;
-      const bezig = laatsteTrace.status === "bezig";
-      const beurten = laatsteTrace.beurten || [];
-      renderKamer(laatsteTrace, beurten, bezig);
-      planSpreekwolk(laatsteTrace, beurten, bezig);
-      render(laatsteTrace, verdict);
-      const klaar = laatsteTrace.status === "klaar" && verdict?.run_id === laatsteTrace.run_id
+      const bezig = trace.status === "bezig";
+      const beurten = trace.beurten || [];
+      renderKamer(trace, beurten, bezig);
+      planSpreekwolk(trace, beurten, bezig);
+      render(trace, verdict);
+      const klaar = trace.status === "klaar" && verdict?.run_id === trace.run_id
         && verdict.samenvatting?.trim() && verdict.samenvatting.trim() !== "TODO";
       document.getElementById("open-verdictrol").hidden = !klaar;
       const rol = document.getElementById("verdictrol");

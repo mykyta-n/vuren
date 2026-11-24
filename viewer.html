@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="nl">
+<html lang="nl" data-viewer="VIEWER_MODE">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -52,13 +52,10 @@
   }
   .replay-status { grid-column: 1 / -1; margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--zacht); }
 
-  .zaalbediening.live { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .live .zaalacties { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px 15px; }
-  .live #start-debat { justify-self: end; font-size: 16px; }
-  .live #open-dossier { min-width: min(100%, 290px); }
-  .startmelding { margin: 0; font-size: 13px; color: var(--fout); }
-  .startmelding:empty { display: none; }
-  @media (max-width: 720px) { .live .zaalacties { display: flex; justify-content: center; flex-wrap: wrap; } }
+  [data-viewer="live"] .zaalbediening { display: flex; align-items: center; }
+  [data-viewer="live"] #open-dossier { min-width: min(100%, 290px); }
+  [data-viewer="live"] .zaalbediening:not(.live), [data-viewer="live"] .poort { visibility: hidden; }
+
   button {
     --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
     position: relative; isolation: isolate; cursor: pointer; border: 0; background: none; color: #fff1d9;
