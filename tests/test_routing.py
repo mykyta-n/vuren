@@ -4,19 +4,34 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import raadsleden
-from council import kies_volgende, nieuwe_eigen_records
+from council import bronstatus, kies_volgende, nieuwe_eigen_records, ontbrekend_bronbewijs
 
 
-def routering(rol, vraag):
+def routering(rol, vraag, doel="mechanisme", spoor="hoogte van de meting"):
     return SimpleNamespace(text=json.dumps({
         "aan": rol,
         "vraag": vraag,
+        "doel": doel,
+        "spoor": spoor if rol else None,
         "reden": "Vergelijk onafhankelijke waarnemingen.",
         "open_vragen": ["Waardoor ontstond de afwijking?"],
     }))
 
 
 class BronvoortgangTest(unittest.TestCase):
+    def test_bronstatus_wordt_uit_de_zichtbare_tekst_gehaald(self):
+        self.assertEqual(bronstatus("De proefbron mist deze meting.\n**BRONSTATUS:** buiten_bron\n"),
+                         ("De proefbron mist deze meting.", "buiten_bron"))
+        self.assertEqual(bronstatus("Geen marker, wel onzekerheid."), ("Geen marker, wel onzekerheid.", None))
+
+    def test_negeert_bronstatus_zonder_eigen_bronraadpleging(self):
+        beurten = [
+            {"soort": "routering", "spoor": "meting"},
+            {"soort": "toolcall", "spreker": "oracle"},
+            {"soort": "bericht", "spreker": "engineer", "bronstatus": "buiten_bron"},
+        ]
+        self.assertEqual(ontbrekend_bronbewijs(beurten), {})
+
     def test_houdt_alleen_nieuwe_eigen_records_bij(self):
         debat = [
             {"nr": 2, "spreker": "engineer", "tekst": "Ik citeer ENG-991 en ORA-992."},
@@ -65,6 +80,25 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(keuze["aan"], "oracle")
         self.assertIn("laatste relevante waarneming", keuze["vraag"])
+
+        debat.append({"nr": 12, "spreker": "oracle", "tekst": "ORA-995 dateert de proef."})
+        beurten.append({"soort": "toolcall", "spreker": "oracle"})
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertEqual(keuze["aan"], "engineer")
+        self.assertEqual(keuze["doel"], "herstel")
+        self.assertIn("veiliggesteld", keuze["vraag"])
+
+        beurten.append({"soort": "routering", **keuze})
+        beurten.append({"soort": "toolcall", "spreker": "engineer"})
+        debat.append({"nr": 15, "spreker": "engineer", "tekst": "ENG-996 geeft een omkeerbare stap."})
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertEqual(keuze["aan"], "beast_master")
+        self.assertEqual(keuze["doel"], "verloop")
+        self.assertIn("#12", keuze["vraag"])
         koning.run.assert_not_awaited()
 
     async def test_wisselt_van_bron_na_een_beurt_zonder_nieuw_record(self):
@@ -83,7 +117,7 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(koning.run.await_count, 2)
         prompt = koning.run.await_args_list[0].kwargs["messages"]
         context = json.loads(prompt.split("\nInput:\n", 1)[1])
-        self.assertNotIn("engineer", context["toegestane_rollen"])
+        self.assertNotIn("engineer", context["rollen_per_vervolgdoel"]["mechanisme"])
         self.assertIn("leylijnmetingen", context["rollen"]["archmage"])
         self.assertEqual(context["debat"][-1]["nieuwe_eigen_record_ids"], [])
 
@@ -101,3 +135,59 @@ class RouteringTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(keuze["aan"], "engineer")
         koning.run.assert_awaited_once()
+
+    async def test_verwerpt_derde_vervolg_voor_hetzelfde_doel(self):
+        koning = SimpleNamespace(run=AsyncMock(side_effect=[
+            routering("historian", "Is er nog een preciezer interval?"),
+            routering("engineer", "Welke herstelstap is gedocumenteerd?", "herstel"),
+        ]))
+        debat = [
+            {"nr": 2, "spreker": "beast_master", "tekst": "BEA-991 meldt een tijd, geen interval."},
+            {"nr": 4, "spreker": "oracle", "tekst": "ORA-992 dateert een waarneming, geen interval."},
+        ]
+        beurten = [
+            {"soort": "routering", "aan": "beast_master", "vraag": "Welk interval staat er?", "doel": "mechanisme", "open_vragen": ["Welk interval?"]},
+            {"soort": "routering", "aan": "oracle", "vraag": "Kun je het interval afleiden?", "doel": "mechanisme", "open_vragen": ["Welk interval?"]},
+        ]
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertEqual(keuze["doel"], "herstel")
+        self.assertEqual(koning.run.await_count, 2)
+
+    async def test_verwerpt_derde_lege_bronzoektocht_ook_bij_een_ander_doel(self):
+        koning = SimpleNamespace(run=AsyncMock(side_effect=[
+            routering("historian", "Staat de meetstand misschien in het archief?", "tegenbewijs", " Meetstand "),
+            routering("historian", "Welke ontwerpregel geldt?", "mechanisme", "ontwerpregel"),
+        ]))
+        debat = [
+            {"nr": 3, "spreker": "oracle", "tekst": "Mijn dagboek bevat geen meetstand."},
+            {"nr": 6, "spreker": "archmage", "tekst": "Mijn bron bevat deze meetstand niet."},
+        ]
+        beurten = []
+        for rol in ("oracle", "archmage"):
+            beurten.extend([
+                {"soort": "routering", "aan": rol, "vraag": "Wat was de meetstand?", "doel": "verloop",
+                 "spoor": "meetstand", "open_vragen": ["Wat was de meetstand?"]},
+                {"soort": "toolcall", "spreker": rol},
+                {"soort": "bericht", "spreker": rol, "bronstatus": "geen_treffers"},
+            ])
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertEqual(keuze["spoor"], "ontwerpregel")
+        self.assertEqual(koning.run.await_count, 2)
+
+    async def test_kan_stoppen_met_open_vragen_na_drie_bronnen(self):
+        koning = SimpleNamespace(run=AsyncMock(return_value=routering(None, None, None)))
+        debat = [
+            {"nr": 2, "spreker": "archmage", "tekst": "ARC-991 geeft een eerste meting."},
+            {"nr": 4, "spreker": "oracle", "tekst": "ORA-992 dateert een waarneming."},
+            {"nr": 6, "spreker": "beast_master", "tekst": "BEA-993 geeft een tweede waarneming."},
+        ]
+        beurten = [{"soort": "toolcall", "spreker": b["spreker"]} for b in debat]
+
+        keuze = await kies_volgende(koning, debat, beurten, raadsleden.alle())
+
+        self.assertIsNone(keuze["aan"])
+        self.assertEqual(keuze["open_vragen"], ["Waardoor ontstond de afwijking?"])
