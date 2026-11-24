@@ -10,6 +10,8 @@ import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+ASSETS = ROOT / "assets"
+MEDIA_TYPES = {".png": "image/png", ".ttf": "font/ttf"}
 
 
 def main():
@@ -29,10 +31,11 @@ def main():
                 return self.stuur(ROOT / "viewer.js", "text/javascript; charset=utf-8")
             if pad == "/viewer.css":
                 return self.stuur(ROOT / "viewer.css", "text/css; charset=utf-8")
-            if pad in ("/council-chamber.png", "/council-cast.png", "/council-extra-cast.png", "/council-king-throne.png", "/verdict-parchment.png"):
-                return self.stuur(ROOT / "assets" / pad[1:], "image/png")
-            if pad == "/assets/pixelify-sans.ttf":
-                return self.stuur(ROOT / pad[1:], "font/ttf")
+            bestand = Path(pad)
+            if bestand.parent in (Path("/"), Path("/assets")) and bestand.suffix in MEDIA_TYPES:
+                asset = ASSETS / bestand.name
+                if asset.is_file() and not asset.is_symlink():
+                    return self.stuur(asset, MEDIA_TYPES[bestand.suffix])
             if pad in ("/trace.json", "/verdict.json"):
                 return self.stuur(map_ / pad[1:], "application/json; charset=utf-8")
             self.send_error(404)
