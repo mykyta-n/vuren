@@ -144,3 +144,37 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(len(king.prompts), 2)
         self.assertIn(UNKNOWN_ID, str(raised.exception.__cause__))
+
+    async def test_empty_identical_and_abstaining_positions_require_repair(self):
+        for left, right in (
+            ("De meter is vervangen.", " TODO "),
+            ("De meter bleef staan.", "DE METER  BLEEF STAAN!"),
+            ("De meter is vervangen.", "De Oracle weet het niet en neemt geen standpunt in over de meter."),
+            ("Ik weet het niet.", "I don't know."),
+        ):
+            with self.subTest(left=left, right=right):
+                invalid = uncertain_result()
+                invalid["geschillen"][0]["standpunten"] = {"engineer": left, "oracle": right}
+                king = FakeKing(invalid, uncertain_result())
+                _, disputes = await build_verdict(king, DEBATE, "test-run")
+                self.assertEqual(disputes, uncertain_result()["geschillen"])
+                self.assertEqual(len(king.prompts), 2)
+
+    async def test_uncertain_position_with_a_concrete_disagreement_is_accepted(self):
+        result = uncertain_result()
+        result["geschillen"][0]["standpunten"]["oracle"] = (
+            "Ik weet het niet zeker, maar volgens mijn proef bleef de meter staan."
+        )
+        king = FakeKing(result)
+        _, disputes = await build_verdict(king, DEBATE, "test-run")
+        self.assertEqual(disputes, result["geschillen"])
+        self.assertEqual(len(king.prompts), 1)
+
+    async def test_mixed_citations_for_recovery_action_require_repair(self):
+        invalid = uncertain_result()
+        invalid["verdict"]["acties"][0]["bewijs"] = ["ENG-901", UNKNOWN_ID]
+        king = FakeKing(invalid, uncertain_result())
+        verdict, _ = await build_verdict(king, DEBATE, "test-run")
+        self.assertEqual(len(king.prompts), 2)
+        self.assertIn("verdict.acties[0].bewijs", king.prompts[1].split("Vorige uitvoer", 1)[0])
+        self.assertEqual(verdict["acties"], uncertain_result()["verdict"]["acties"])
