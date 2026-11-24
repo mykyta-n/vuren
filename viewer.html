@@ -54,14 +54,13 @@
     position: fixed; inset: 0; margin: 0; height: 100%; width: 100%; max-height: none; max-width: none;
     border: 0; color: var(--tekst); background: var(--bg); padding: 0 clamp(18px, 4vw, 52px) 40px; overflow: auto;
   }
-  .dossier-inhoud { width: min(100%, 1130px); margin: 0 auto; }
+  .dossier-inhoud { width: min(100%, 1130px); height: 100%; margin: 0 auto; display: flex; flex-direction: column; }
   .dossier::backdrop { background: var(--bg); }
   .dossierkop {
     position: sticky; top: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px;
     background: var(--bg); border-bottom: 1px solid var(--lijn); padding: 18px 0;
-    margin-bottom: 25px; z-index: 1;
+    margin-bottom: 20px; z-index: 1; flex: none;
   }
-  .dossierkop h2 { font: 600 clamp(22px, 3vw, 30px)/1.1 var(--pixel); margin: 0; }
   .dossier-terug { color: var(--zacht); font: 600 14px/1.3 system-ui, sans-serif; padding: 8px 0; }
   .dossier-terug:hover { color: var(--tekst); }
   .dossier-terug::before, .dossier-terug::after { display: none; }
@@ -181,9 +180,22 @@
     from { clip-path: inset(48% 0); opacity: .65; }
     to { clip-path: inset(0 -20% -50%); opacity: 1; }
   }
-  .dossier-raster { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 31%); gap: clamp(24px, 4vw, 65px); }
+  .dossier-raster {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 31%); grid-template-rows: minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 65px); flex: 1; min-height: 0;
+  }
+  .dossier-scroll {
+    min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior: contain;
+    scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #505857 transparent;
+    padding: 0 12px 12px 0;
+  }
+  .dossier-scroll:focus-visible { outline: 2px solid var(--koning); outline-offset: -2px; }
   #debat { min-width: 0; }
-  .ronde { margin: 21px 0 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--zacht); }
+  .ronde {
+    position: sticky; top: 0; z-index: 1; margin: 24px 0 0; padding: 8px 11px;
+    background: #252626; border-left: 2px solid #bc9a62; border-radius: 0 3px 3px 0;
+    color: #f2d8aa; font: 600 16px/1.15 var(--pixel);
+  }
   #debat .ronde:first-child { margin-top: 0; }
   .beurt { border-bottom: 1px solid var(--lijn); padding: 15px 0 17px; overflow-wrap: anywhere; }
   .beurt .wie { display: flex; align-items: center; gap: 9px; margin: 0 0 6px; font-size: 15px; line-height: 1.35; }
@@ -192,15 +204,20 @@
   .beurt-kern .id { vertical-align: 1px; }
   .beurt-vraag { margin: 6px 0 0; color: var(--zacht); font-size: 13px; }
   .beurt-details { margin-top: 8px; }
+  .beurt-details:not([open]) .details-sluiten, .beurt-details[open] .details-openen { display: none; }
+  .beurt-uitgebreid { margin-top: 10px; padding: 12px 14px; border-left: 2px solid #67716f; background: #1a2021; }
+  .beurt-uitgebreid section + section { border-top: 1px solid var(--lijn); margin-top: 12px; padding-top: 10px; }
+  .beurt-uitgebreid h4 { margin: 0 0 4px; font-size: 13px; color: #dfded5; }
   .dossier summary { cursor: pointer; color: var(--zacht); font-weight: 600; font-size: 13px; }
   .dossier summary:hover { color: var(--tekst); }
-  .beurt-antwoord { margin: 9px 0; max-width: 75ch; }
+  .beurt-antwoord { margin: 4px 0; max-width: 75ch; }
   .beurt-toelichting { color: var(--zacht); margin: 9px 0; font-size: 13px; }
   .bronregels { padding-left: 20px; margin: 6px 0; color: var(--zacht); font-size: 13px; overflow-wrap: anywhere; }
   .bronregels li + li { margin-top: 4px; }
   .vlag { color: var(--fout); margin-left: 8px; }
   .denkt { padding: 15px 0; color: var(--zacht); font-size: 13px; }
   .techniek { margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--lijn); }
+  .techniek h3 { margin: 0 0 8px; font-size: 16px; }
   .techniek h4 { font-size: 13px; margin: 13px 0 4px; }
   .uitspraak { padding: 17px 19px; border: 1px solid var(--lijn); border-top: 2px solid #9a8056; border-radius: 7px; background: var(--paneel); }
   .uitspraak h3 { font-size: 17px; margin: 0 0 10px; }
@@ -210,7 +227,10 @@
   .uitspraak details { margin: 12px 0; }
   .pitchlink { display: inline-block; font: 600 13px system-ui, sans-serif; color: var(--koning); margin-top: 10px; }
   @media (max-width: 720px) {
-    .dossier-raster { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .dossier-inhoud { height: auto; }
+    .dossier-raster { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 26px; }
+    .dossier-scroll { overflow: visible; padding-right: 0; }
+    .ronde { position: static; }
     .dossier-raster aside { grid-row: 1; }
     .naamplaat { padding-inline: 2px; }
     .perkament { padding-inline: clamp(25px, 7.5vw, 58px); }
@@ -280,30 +300,29 @@
   </div>
   <div id="rol-inhoud" class="roltekst" tabindex="0"></div>
 </dialog>
-<dialog id="dossier" class="dossier" aria-labelledby="dossier-titel">
+<dialog id="dossier" class="dossier" aria-label="Raadsdossier">
 <div class="dossier-inhoud">
   <div class="dossierkop">
     <form method="dialog"><button class="dossier-terug" type="submit" autofocus>← Raadszaal</button></form>
-    <h2 id="dossier-titel">Debat en verdict</h2>
   </div>
   <main class="dossier-raster">
-    <section aria-label="Debat">
+    <section class="dossier-scroll transcript" aria-label="Debatrondes" tabindex="0">
       <div id="debat"><p class="melding">Start de Council met <code>uv run council</code>.</p></div>
     </section>
-    <aside aria-label="Verdict en rungegevens">
+    <aside class="dossier-scroll" aria-label="Verdict en rungegevens" tabindex="0">
       <section class="uitspraak">
         <h3>Verdict</h3>
         <div id="verdict"><p class="uitspraak-kern leeg">Er is nog geen verdict.</p></div>
         <a class="pitchlink" href="/pitch">Bekijk het bewijs</a>
       </section>
-      <details class="techniek">
-        <summary>Technische details</summary>
+      <section class="techniek" aria-labelledby="techniek-titel">
+        <h3 id="techniek-titel">Technische details</h3>
         <p id="runid" class="runid"></p>
         <h4>Raadsleden</h4><div id="leden"></div>
         <h4>Spelregels</h4><div id="checks"></div>
         <h4>Modelverbruik</h4><div id="verbruik"></div>
         <div id="overige-bronnen" hidden><h4>Overige bronraadplegingen</h4><ul class="bronregels"></ul></div>
-      </details>
+      </section>
     </aside>
   </main>
 </div>
@@ -446,15 +465,18 @@ function beurtKaart(beurt, routering, bronnen, open) {
   const openVragen = routering?.open_vragen?.length
     ? `<p class="beurt-toelichting"><b>Open vragen</b> ${routering.open_vragen.map(opmaak).join(" · ")}</p>` : "";
   const bronlijst = bronnen.length
-    ? `<ul class="bronregels" aria-label="Geraadpleegde bronnen">${bronnen.join("")}</ul>` : "";
+    ? `<section><h4>Geraadpleegde bronnen</h4><ul class="bronregels">${bronnen.join("")}</ul></section>` : "";
   return `<article class="beurt" style="--kleur:${kleur(beurt.spreker)}">
     <h3 class="wie"><span class="stip" aria-hidden="true"></span>${naam}</h3>
     <p class="beurt-kern">${esc(kern?.tekst || "Geen tekst bij deze beurt.")} ${citaten}</p>
     ${vraag}
     <details class="beurt-details" data-beurt="${esc(beurt.nr)}"${open ? " open" : ""}>
-      <summary>Bekijk volledige beurt</summary>
-      <div class="beurt-antwoord">${opmaak(beurt.tekst)}</div>
-      ${reden}${openVragen}${bronlijst}
+      <summary><span class="details-openen">Toon het volledige antwoord</span><span class="details-sluiten">Verberg het volledige antwoord</span></summary>
+      <div class="beurt-uitgebreid">
+        <section><h4>Volledig antwoord van ${naam}</h4><div class="beurt-antwoord">${opmaak(beurt.tekst)}</div></section>
+        ${reden || openVragen ? `<section><h4>Routering</h4>${reden}${openVragen}</section>` : ""}
+        ${bronlijst}
+      </div>
     </details>
   </article>`;
 }
@@ -550,6 +572,7 @@ function render(trace, verdict) {
   for (const g of trace.geschillen || []) {
     html += `<article class="beurt"><h3 class="wie">${esc(g.onderwerp)}</h3><p class="beurt-kern">${g.uitkomst ? opmaak(g.uitkomst) : '<span class="leeg">Onbeslecht</span>'} ${(g.bewijs || []).map(opmaak).join(" ")}</p><div class="beurt-toelichting">${Object.entries(g.standpunten || {}).map(([r, standpunt]) => `<b>${esc(NAMEN[r] || r)}</b> · ${opmaak(standpunt)}`).join("<br>")}</div></article>`;
   }
+  if (!zelfdeRun) debat.closest(".transcript").scrollTop = 0;
   debat.innerHTML = html || '<p class="melding">De eerste beurt verschijnt zodra de Raad begint.</p>';
   const overige = document.getElementById("overige-bronnen");
   overige.hidden = !overigeBronnen.length;
