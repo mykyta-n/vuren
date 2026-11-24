@@ -39,8 +39,8 @@
   .titelpijl { height: clamp(12px, 2.3vw, 27px); background: linear-gradient(#f5d692, #af773e 51%, #e2aa57 52%, #7f522e); }
   .titelpijl.veren { clip-path: polygon(0 8%, 20% 8%, 33% 44%, 100% 44%, 100% 59%, 33% 59%, 20% 93%, 0 93%, 13% 53%); }
   .titelpijl.punt { clip-path: polygon(0 44%, 76% 44%, 76% 10%, 100% 51%, 76% 91%, 76% 59%, 0 59%); }
-  .zaalbediening { display: flex; justify-content: center; padding: 16px 0 26px; }
-  #open-dossier { min-width: min(100%, 255px); padding: 13px 26px 19px; font-size: clamp(17px, 2vw, 21px); }
+  .zaalbediening { display: flex; flex: 1; align-items: center; justify-content: center; padding: 18px 0; }
+  #open-dossier { min-width: min(100%, 290px); padding: 15px 29px 22px; font-size: clamp(18px, 2.1vw, 23px); }
   button {
     --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
     position: relative; isolation: isolate; cursor: pointer; border: 0; background: none; color: #fff1d9;
@@ -69,7 +69,10 @@
   .dossier-terug::before, .dossier-terug::after { display: none; }
   header h1 { font: 700 clamp(21px, 4.7vw, 48px)/1 var(--pixel); margin: 0; text-align: center; text-shadow: 2px 3px #080a11; }
   .runid { color: var(--zacht); font-size: 12px; font-family: ui-monospace, monospace; word-break: break-all; }
-  .pagina { width: min(1580px, calc(100% - 40px), calc(max(400px, 100svh - 238px) * 1.78)); margin: 0 auto; }
+  .pagina {
+    width: min(1580px, calc(100% - 40px), calc(max(400px, 100svh - 238px) * 1.78)); margin: 0 auto;
+    min-height: 100svh; display: flex; flex-direction: column;
+  }
   .kamer { margin: 0 auto; border: 1px solid #534534; border-radius: 12px; overflow: hidden; background: #1a1717; }
   .toneel { position: relative; isolation: isolate; background: #181a20; }
   .zaal { display: block; width: 100%; height: auto; image-rendering: pixelated; }
@@ -217,6 +220,19 @@
   .dossier summary { cursor: pointer; color: var(--zacht); font-weight: 600; font-size: 13px; }
   .dossier summary:hover { color: var(--tekst); }
   .beurt-antwoord { margin: 4px 0; max-width: 75ch; }
+  .antwoord-tabel {
+    max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; margin: 8px 0;
+    border: 1px solid #49514f; border-radius: 6px;
+  }
+  .antwoord-tabel:focus-visible { outline: 2px solid #b3cde0; outline-offset: 2px; }
+  .antwoord-tabel table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.45; }
+  .antwoord-tabel .tabel-breed { min-width: 35rem; }
+  .antwoord-tabel th, .antwoord-tabel td { text-align: left; vertical-align: top; padding: 8px 10px; }
+  .antwoord-tabel th { background: #323331; color: #f2d8aa; font-weight: 700; }
+  .antwoord-tabel td { border-top: 1px solid var(--lijn); }
+  .antwoord-tabel tbody tr:nth-child(even) { background: #222827; }
+  .antwoord-tabel tbody th, .antwoord-tabel tbody td { overflow-wrap: anywhere; }
+  .antwoord-tabel .id { margin: 0 1px 2px 0; }
   .beurt-toelichting { color: var(--zacht); margin: 9px 0; font-size: 13px; }
   .bronregels { padding-left: 20px; margin: 6px 0; color: var(--zacht); font-size: 13px; overflow-wrap: anywhere; }
   .bronregels li + li { margin-top: 4px; }
@@ -251,8 +267,9 @@
   .lid { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center; font-size: 14px; padding: 2px 0; }
   .stip { width: 12px; height: 12px; border-radius: 50%; background: var(--kleur); }
   .getal { color: var(--zacht); font-size: 12px; font-variant-numeric: tabular-nums; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-  td { padding: 2px 0; } td:last-child { text-align: right; }
+  #verbruik table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  #verbruik td { padding: 2px 0; }
+  #verbruik td:last-child { text-align: right; }
   .check { font-size: 13px; padding: 2px 0; }
   .check.ok::before { content: "✓ "; color: var(--ok); }
   .check.fout::before { content: "✗ "; color: var(--fout); }
@@ -354,6 +371,41 @@ function opmaak(tekst) {
       return `<span class="id${raar ? " raar" : ""}" style="--kleur-id:${kleur(PREFIX[p])}" title="${raar ? "Geen gewoon koppelteken: dit ID faalt op het schema" : NAMEN[PREFIX[p]]}">${p}-${n}</span>`;
     })
     .replace(/\n/g, "<br>");
+}
+
+function tabelcellen(regel) {
+  const cellen = regel.trim().split(/(?<!\\)\|/);
+  if (cellen[0] === "") cellen.shift();
+  if (cellen.at(-1) === "") cellen.pop();
+  return cellen.map(cel => cel.trim().replace(/\\\|/g, "|"));
+}
+
+function opmaakAntwoord(tekst) {
+  const regels = String(tekst ?? "").split(/\r?\n/);
+  const blokken = [], alinea = [];
+  for (let i = 0; i < regels.length; i++) {
+    const kop = tabelcellen(regels[i]);
+    const scheiding = tabelcellen(regels[i + 1] || "");
+    if (kop.length < 2 || kop.length !== scheiding.length || !scheiding.every(cel => /^:?-{3,}:?$/.test(cel))) {
+      alinea.push(regels[i]);
+      continue;
+    }
+    if (alinea.length) blokken.push(opmaak(alinea.splice(0).join("\n").trimEnd()));
+    const rijen = [];
+    i += 1;
+    while (i + 1 < regels.length) {
+      const cellen = tabelcellen(regels[i + 1]);
+      if (cellen.length !== kop.length) break;
+      rijen.push(`<tr>${cellen.map(cel => `<td>${opmaak(cel)}</td>`).join("")}</tr>`);
+      i += 1;
+    }
+    const klasse = kop.length > 3 ? ' class="tabel-breed"' : "";
+    blokken.push(`<div class="antwoord-tabel" role="region" aria-label="Tabel in het antwoord" tabindex="0">
+      <table${klasse}><thead><tr>${kop.map(cel => `<th scope="col">${opmaak(cel)}</th>`).join("")}</tr></thead>
+      <tbody>${rijen.join("")}</tbody></table></div>`);
+  }
+  if (alinea.length) blokken.push(opmaak(alinea.join("\n").trimStart()));
+  return blokken.join("");
 }
 
 function ids(tekst) {
@@ -479,7 +531,7 @@ function beurtKaart(beurt, routering, bronnen, open) {
     <details class="beurt-details" data-beurt="${esc(beurt.nr)}"${open ? " open" : ""}>
       <summary><span class="details-openen">Toon het volledige antwoord</span><span class="details-sluiten">Verberg het volledige antwoord</span></summary>
       <div class="beurt-uitgebreid">
-        <section><h4>Volledig antwoord van ${naam}</h4><div class="beurt-antwoord">${opmaak(beurt.tekst)}</div></section>
+        <section><h4>Volledig antwoord van ${naam}</h4><div class="beurt-antwoord">${opmaakAntwoord(beurt.tekst)}</div></section>
         ${reden || openVragen ? `<section><h4>Routering</h4>${reden}${openVragen}</section>` : ""}
         ${bronlijst}
       </div>
