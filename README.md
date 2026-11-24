@@ -64,7 +64,7 @@ Geen uv? Maak een venv (`python -m venv .venv`, activeer met `.venv\Scripts\acti
 ### Liveviewer en demoviewer
 
 - **Live** op [poort 8100](http://127.0.0.1:8100/). Start met `uv run viewer`. Start het debat met `uv run council` in een andere terminal. De liveviewer leest tijdens het debat de bijgewerkte bestanden. Gebruik `uv run viewer --port 8105` als 8100 bezet is.
-- **Demo** op [poort 8104](http://127.0.0.1:8104/). Start met `uv run demo-viewer /pad/naar/runmap` en geef de map met de twee bestanden van dezelfde afgeronde run. Zie [demo-viewer/VIEWER_README.md](demo-viewer/VIEWER_README.md) voor het klaarzetten van de demo.
+- **Demo** op [poort 8104](http://127.0.0.1:8104/). Start met `uv run demo-viewer` om dezelfde projectbestanden als de liveviewer af te spelen. Geef met `uv run demo-viewer /pad/naar/runmap` een andere opgeslagen run op. Zie [demo-viewer/VIEWER_README.md](demo-viewer/VIEWER_README.md) voor het klaarzetten van de demo.
 
 Beide viewers kunnen tegelijk draaien.
 

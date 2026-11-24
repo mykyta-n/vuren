@@ -82,16 +82,17 @@ def main():
 
 def demo_main():
     parser = argparse.ArgumentParser(description="Speel een opgeslagen debat af.")
-    parser.add_argument("map", nargs="?", type=Path, help="Map met trace.json en verdict.json")
+    parser.add_argument("map", nargs="?", type=Path,
+                        help="Map met trace.json en verdict.json (standaard de projectmap)")
     parser.add_argument("--port", type=int, default=os.getenv("DEMO_VIEWER_PORT", "8104"))
     args = parser.parse_args()
-    map_ = args.map.resolve() if args.map is not None else ROOT / "demo-viewer"
-    bestanden = ("trace.json", "verdict.json")
-    if args.map is None and not any((map_ / naam).exists() for naam in bestanden):
-        map_ = ROOT / "demo" / "pitch"
-    for naam in bestanden:
-        if not (map_ / naam).is_file():
-            parser.error(f"Bestand niet gevonden: {map_ / naam}")
+    map_ = args.map.resolve() if args.map is not None else ROOT
+    ontbreekt = [naam for naam in ("trace.json", "verdict.json") if not (map_ / naam).is_file()]
+    if ontbreekt:
+        melding = f"Ontbreekt in {map_}: {', '.join(ontbreekt)}."
+        if args.map is None:
+            melding += " Geef een map met een opgeslagen run op, of gebruik 'uv run demo-viewer demo/pitch' voor de oefendemo."
+        parser.error(melding)
     serve(map_, args.port, demo=True)
 
 

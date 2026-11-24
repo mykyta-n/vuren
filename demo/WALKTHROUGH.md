@@ -1,6 +1,6 @@
 # Vuren · three-minute jury walkthrough
 
-Start the viewer from the repository root with `uv run viewer demo/pitch`. Open **Debat en verdict → Open bewijsweergave** or visit `/pitch` on the viewer server. The saved rehearsal follows a fictional gate counter. It runs entirely from the two JSON files, without MCP or model calls. The controls are in Dutch. For the team's submission rehearsal, use `uv run viewer /path/to/saved-run` with the trace and verdict from the same run.
+Start the rehearsal from the repository root with `uv run demo-viewer demo/pitch`. Open **Debat en verdict → Open bewijsweergave** after starting playback, or visit `/pitch` on the viewer server. The saved rehearsal follows a fictional gate counter. It runs entirely from the two JSON files, without MCP or model calls. The controls are in Dutch. For the team's submission rehearsal, use `uv run demo-viewer /path/to/saved-run` with the trace and verdict from the same run.
 
 | Time | On screen | What to say |
 | --- | --- | --- |

@@ -5,12 +5,12 @@ Speel in de raadszaal een opgeslagen debat af zonder modelcalls. De demoviewer d
 Voer vanuit de projectmap uit
 
 ```sh
-uv run demo-viewer "/pad/naar/beste-debat"
+uv run demo-viewer
 ```
 
-Zonder uv kun je dezelfde demo starten met `python3 viewer.py --demo "/pad/naar/beste-debat"`. De demoviewer gebruikt alleen de standaardbibliotheek van Python.
+Zonder uv kun je dezelfde demo starten met `python3 viewer.py --demo`. De demoviewer gebruikt alleen de standaardbibliotheek van Python.
 
-De map bevat `trace.json` en `verdict.json` van dezelfde afgeronde run. Kopieer beide bestanden ongewijzigd. Je kunt ze ook in deze map `demo-viewer/` zetten en `uv run demo-viewer` uitvoeren. Zonder bestanden in die map speelt dat commando de synthetische repetitie uit `demo/pitch/` af.
+Standaard lezen de liveviewer en demoviewer `trace.json` en `verdict.json` uit de projectmap. Gebruik beide bestanden ongewijzigd uit dezelfde afgeronde run. Met `uv run demo-viewer "/pad/naar/beste-debat"` speel je een andere opgeslagen run af. Kies voor de synthetische repetitie expliciet `uv run demo-viewer demo/pitch`.
 
 Klik op **Start debat** om de poort te openen. Gebruik **<** en **>** of de pijltjestoetsen om de vragen en antwoorden te volgen. **Debat en verdict** opent het dossier. Op de laatste stap opent de rol bij de Koning het verdict. Bij een ouder debat met een placeholder toont de rol de opgenomen koningssamenvatting.
 
