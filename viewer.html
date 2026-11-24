@@ -40,7 +40,7 @@
   .titelpijl.veren { clip-path: polygon(0 8%, 20% 8%, 33% 44%, 100% 44%, 100% 59%, 33% 59%, 20% 93%, 0 93%, 13% 53%); }
   .titelpijl.punt { clip-path: polygon(0 44%, 76% 44%, 76% 10%, 100% 51%, 76% 91%, 76% 59%, 0 59%); }
   .zaalbediening {
-    display: grid; flex: 1; align-content: center; align-items: center; justify-content: center;
+    display: grid; flex: 1; align-content: center; align-items: start; justify-content: center;
     grid-template-columns: 44px minmax(0, 290px) 44px; gap: 0 clamp(6px, 2vw, 16px); padding: 18px 0;
   }
   #replay-vorige { grid-column: 1; }
@@ -61,6 +61,7 @@
   button::after { inset: 2px; background: linear-gradient(160deg, #354050, #22252d 70%); }
   button:hover::after { background: linear-gradient(160deg, #505f70, #2a303a 70%); }
   button:focus-visible { outline: none; text-decoration: underline; text-underline-offset: .24em; }
+  .zaalbediening button:focus-visible { text-decoration: none; }
   button:not(.koningsrol):focus-visible::before { background: #b3cde0; }
   summary:focus-visible, a:focus-visible { outline: 2px solid #b3cde0; outline-offset: 3px; }
   .dossier {
