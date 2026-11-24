@@ -23,7 +23,7 @@ def main():
             pad = self.path.split("?")[0]
             if pad in ("/", "/index.html"):
                 return self.stuur(ROOT / "viewer.html", "text/html; charset=utf-8")
-            if pad in ("/council-chamber.png", "/council-cast.png"):
+            if pad in ("/council-chamber.png", "/council-cast.png", "/verdict-parchment.png"):
                 return self.stuur(ROOT / "assets" / pad[1:], "image/png")
             if pad == "/pixelify-sans.ttf":
                 return self.stuur(ROOT / "assets" / pad[1:], "font/ttf")
