@@ -92,6 +92,7 @@ Viewer op een andere poort: zet `VIEWER_PORT=8101` als omgevingsvariabele. Een a
 
 - **Welke Rollen** meedoen: maak een bestand aan in `raadsleden/` met `ROL`, `NAAM` en `PERSPECTIEF` uit `rolkaarten.md`. `ROL` is de mapnaam in kleine letters (`archmage`, `engineer`, `guardian_keeper`, `historian`, `oracle`, `beast_master`). De Koning kan het nieuwe Raadslid meteen kiezen. Voeg in `.env` een regel `MCP_<ROL>=https://<mcp-host>/<rol>/mcp` toe.
 - **Kennisbronnen**: standaard leest elk Raadslid via MCP. Laat je `MCP_<ROL>` leeg, dan plakt de kit de bestanden uit `kennisbronnen/<rol>/` (uit `pack.zip`) in de prompt van dat Raadslid. Heeft een Raadslid geen van beide, dan meldt de kit dat bij de start.
+- **Onafhankelijke toetsen**: Archmage vergelijkt gedateerde leylijnmetingen. Guardian Keeper vergelijkt de schildspecificatie met wachtrapporten. Historian vergelijkt gebeurtenistijden met de archiefregistratie. Stel `MCP_ARCHMAGE`, `MCP_GUARDIAN_KEEPER` en `MCP_HISTORIAN` in of gebruik de eigen bestanden van elke Rol.
 - **Modellen**: `MODEL_KLEIN` voor de Raadsleden, `MODEL_GROOT` voor de Koning, `REASONING` voor het denkwerk. Op het Roboest-endpoint zijn dat `achrona` en `achrona-groot`. Een andere provider kies je alleen via `.env` (blokken voor het Roboest-endpoint, FreeLLMAPI en Ollama). Met FreeLLMAPI kies je `auto:fast`/`auto:smartest` of een vast model uit de catalogus op http://localhost:3001. Support geven we op het Roboest-endpoint en FreeLLMAPI; andere eigen modellen mogen, zonder support.
 - **Beurtenbudget**: de Koning kiest maximaal 10 Raadslid-beurten en kan eerder stoppen. De oude instelling `RONDES` heeft geen invloed op de adaptieve routering.
 - **Het debat zelf**: de instructies, wie wie aan het woord laat (`kies_volgende()`), wat elk Raadslid van het debat ziet, en hoe de Koning het Verdict invult. Dat staat allemaal in `council.py`.
@@ -100,7 +101,7 @@ Viewer op een andere poort: zet `VIEWER_PORT=8101` als omgevingsvariabele. Een a
 
 ## De Koning leidt het debat
 
-`kies_volgende()` in `council.py` geeft de Koning de Raadslid-berichten, de eerder gestelde vragen, de open vragen en de beschikbare Rollen. De Koning kiest wie een bewering kan toetsen en stelt één concrete vraag. Elke keuze wordt een `routering` in de trace met `aan`, `vraag`, `reden` en de bijgewerkte `open_vragen`.
+`kies_volgende()` in `council.py` geeft de Koning de Raadslid-berichten, de eerder gestelde vragen, de open vragen en de beschikbare Rollen. Bij elke bijdrage ziet de Koning welke eigen record-ID's voor het eerst genoemd zijn. Na een beurt zonder nieuwe eigen records krijgt eerst een andere Rol de kans om bij te dragen. Elke keuze wordt een `routering` in de trace met `aan`, `vraag`, `reden` en de bijgewerkte `open_vragen`.
 
 Python valideert de modelkeuze en bewaakt het budget. Bij ongeldige uitvoer krijgt het model één herstelpoging. Als de keuze daarna onbruikbaar is, krijgt een beschikbare Rol met de minste beurten een vervolgvraag. Voor een vroege stop (`aan: null`) moeten minstens drie Rollen een bronverwijzing hebben ingebracht en moeten de belangrijke open vragen zijn beantwoord. Bij het bereiken van de limiet blijven onbeantwoorde vragen zichtbaar in de trace.
 

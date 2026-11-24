@@ -53,9 +53,9 @@ class FakeKing:
     async def run(self, *, messages):
         if messages.startswith(REVIEW_INSTRUCTIONS):
             self.review_prompts.append(messages)
-            default = {"ingreep": {"fout": None, "passages": [{"nr": 2, "citaat": DEBATE[0]["tekst"]}]}}
+            default = {"ingreep": {"fout": None, "passages": [1]}}
             answer = default if self.reviews is None else next(self.reviews)
-            return SimpleNamespace(text=json.dumps(answer))
+            return SimpleNamespace(text=answer if isinstance(answer, str) else json.dumps(answer))
         self.prompts.append(messages)
         return SimpleNamespace(text=json.dumps(next(self.responses)))
 
@@ -204,8 +204,8 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
         swapped["verdict"]["oorzaak"]["ingreep"]["bewijs"] = ["ORA-901"]
         swapped["verdict"]["oorzaak"]["verloop"]["bewijs"] = ["ENG-901"]
         accepted = {
-            "ingreep": {"fout": None, "passages": [{"nr": 2, "citaat": debate[0]["tekst"]}]},
-            "verloop": {"fout": None, "passages": [{"nr": 4, "citaat": debate[1]["tekst"]}]},
+            "ingreep": {"fout": None, "passages": [1]},
+            "verloop": {"fout": None, "passages": [2]},
         }
         rejected = deepcopy(accepted)
         rejected["ingreep"]["fout"] = "De bel beschrijft het begin van de test. Beurt 2 beschrijft de vervanging."
@@ -217,6 +217,9 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
         inputs = json.loads(king.review_prompts[0].removeprefix(REVIEW_INSTRUCTIONS))
         self.assertEqual(inputs["claims"]["ingreep"]["bewijs"], ["ORA-901"])
         self.assertEqual(inputs["debat"], debate)
+        self.assertEqual(inputs["bronpassages"][0], {
+            "passage": 1, "nr": 2, "spreker": "engineer", "citaat": debate[0]["tekst"],
+        })
         self.assertIn("Beurt 2", king.prompts[1])
         self.assertIn("Beurt 4", king.prompts[1])
         self.assertIn(debate[0]["tekst"], king.prompts[1])
@@ -231,9 +234,9 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
         for passages in (
             [],
             [{"nr": 4, "citaat": DEBATE[0]["tekst"]}],
-            [{"nr": 2, "citaat": "Verzonnen observatie (ENG-901)."}],
-            [{"nr": 2, "citaat": "ENG-901"}],
-            [{"nr": 4, "citaat": DEBATE[1]["tekst"]}],
+            [999],
+            [True],
+            [2],
         ):
             with self.subTest(passages=passages):
                 review = {"ingreep": {"fout": None, "passages": passages}}
@@ -257,10 +260,35 @@ class VerdictValidationTests(unittest.IsolatedAsyncioTestCase):
             bewering="De Engineer meldt een vervanging, maar Oracle zegt dat de meter bleef staan.",
             bewijs=["ENG-901", "ORA-901"],
         )
-        sources = [{"nr": turn["nr"], "citaat": turn["tekst"]} for turn in DEBATE]
-        incomplete = {"ingreep": {"fout": None, "passages": sources[:1]}}
-        complete = {"ingreep": {"fout": None, "passages": sources}}
+        incomplete = {"ingreep": {"fout": None, "passages": [1]}}
+        complete = {"ingreep": {"fout": None, "passages": [1, 2]}}
         king = FakeKing(result, result, reviews=[incomplete, complete])
         verdict, _ = await build_verdict(king, DEBATE, "test-run")
         self.assertIn("lacks source passages for ORA-901", king.prompts[1])
         self.assertEqual(len(verdict["oorzaak"]["ingreep"]["bronpassages"]), 2)
+
+    async def test_passage_uses_trace_text_and_handles_a_record_heading(self):
+        debate = [
+            {"nr": 2, "spreker": "engineer", "tekst": "**ENG‑901**\n\nMeter A bleef op zijn plaats."},
+            DEBATE[1],
+        ]
+        result = uncertain_result()
+        result["verdict"]["oorzaak"]["ingreep"]["bewering"] = "Meter A bleef op zijn plaats."
+        king = FakeKing(result)
+
+        verdict, _ = await build_verdict(king, debate, "test-run")
+
+        self.assertEqual(verdict["oorzaak"]["ingreep"]["bronpassages"], [
+            {"nr": 2, "spreker": "engineer", "citaat": "**ENG-901** Meter A bleef op zijn plaats."},
+        ])
+
+    async def test_non_json_review_has_its_own_retry(self):
+        result = uncertain_result()
+        wrapped_review = 'Resultaat:\n```json\n{"ingreep":{"fout":null,"passages":[1]}}\n```'
+        king = FakeKing(result, reviews=["Geen bruikbaar antwoord.", wrapped_review])
+
+        verdict, _ = await build_verdict(king, DEBATE, "test-run")
+
+        self.assertEqual(verdict, expected_verdict(result))
+        self.assertEqual(len(king.prompts), 1)
+        self.assertEqual(len(king.review_prompts), 2)
