@@ -58,8 +58,58 @@
   .kamer { margin: 0 auto; border: 1px solid #534534; border-radius: 12px; overflow: hidden; background: #1a1717; }
   .toneel { position: relative; isolation: isolate; background: #181a20; }
   .zaal { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+  .zaallicht { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
+  .torengloed {
+    position: absolute; left: 51.2%; top: 16%; width: 27%; height: 35%; translate: -50% -45%;
+    background: radial-gradient(ellipse, #62d9fc70, #2b86d02a 42%, transparent 70%);
+    animation: toren 8s ease-in-out infinite;
+  }
+  .torenring {
+    position: absolute; left: 51.6%; top: 13.1%; width: 9%; height: 3%;
+    translate: -50% -50%; border: 1px solid #74eaff; border-radius: 50%; box-shadow: 0 0 9px #37c9fa;
+    animation: torenring 8s ease-out infinite;
+  }
+  .vlam {
+    position: absolute; left: var(--licht-x); top: var(--licht-y); width: var(--licht-breedte, 7%); height: var(--licht-hoogte, 16%);
+    translate: -50% -50%; transform-origin: 50% 58%;
+    background: radial-gradient(ellipse, #ffb36977, #de6b241c 45%, transparent 69%);
+    animation: flakker 2.3s steps(1, end) infinite; animation-delay: var(--licht-start);
+  }
+  .vlam::after {
+    content: ""; position: absolute; width: 10%; height: 20%; left: 45%; top: 35%; background: #ffd17d;
+    clip-path: polygon(50% 0, 55% 40%, 82% 27%, 100% 75%, 66% 100%, 22% 94%, 0 65%, 26% 49%);
+  }
+  @keyframes flakker {
+    0%, 100% { opacity: .65; transform: scale(.9, 1); }
+    15% { opacity: .89; transform: scale(1.05, .94); }
+    31% { opacity: .74; transform: scale(.86, 1.13); }
+    53% { opacity: .4; transform: scale(.92, .88); }
+    73% { opacity: .96; transform: scale(1, 1.1); }
+    87% { opacity: .58; transform: scale(.9, .95); }
+  }
+  @keyframes toren { 0%, 100% { opacity: .22; } 45% { opacity: .84; } 72% { opacity: .4; } }
+  @keyframes torenring {
+    0%, 100% { opacity: 0; transform: scale(.95); }
+    27% { opacity: .64; transform: scale(1); }
+    67% { opacity: 0; transform: scale(1.32, 1.34); }
+  }
   .raadskaart { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
   .zitplaats { position: absolute; left: var(--x); top: var(--y); translate: -50% -100%; width: 8.5%; text-align: center; color: var(--rolkleur); }
+  .zitplaats {
+    animation: rondlopen 144s linear infinite;
+    animation-delay: var(--wandel-start, 0s);
+  }
+  .zitplaats[aria-current="true"], .zitplaats.wijst { animation-play-state: paused; z-index: 2; }
+  @keyframes rondlopen {
+    0%, 1%, 24%, 100% { left: var(--x); top: var(--y); }
+    1% { animation-timing-function: steps(4, end); }
+    3% { left: var(--x); top: 44%; animation-timing-function: steps(18, end); }
+    7% { left: var(--wandel-eerst, 12%); top: 44%; animation-timing-function: steps(15, end); }
+    10% { left: var(--wandel-eerst, 12%); top: 84%; animation-timing-function: steps(46, end); }
+    16% { left: var(--wandel-laatst, 88%); top: 84%; animation-timing-function: steps(15, end); }
+    19% { left: var(--wandel-laatst, 88%); top: 44%; animation-timing-function: steps(18, end); }
+    23% { left: var(--x); top: 44%; animation-timing-function: steps(4, end); }
+  }
   .sprite { display: block; aspect-ratio: .5; background: url(council-cast.png) var(--frame) 50% / 400% 100% no-repeat; image-rendering: pixelated; }
   .naamplaat { position: absolute; top: 89%; left: 50%; translate: -50% 0; background: #141416e8; border: 1px solid #80705a; border-radius: 3px; padding: 1px 5px; font: 600 clamp(9px, 1.25vw, 15px)/1.25 var(--pixel); white-space: nowrap; }
   .zitplaats[aria-current="true"] .naamplaat { border-color: currentColor; box-shadow: 0 0 10px currentColor; }
@@ -80,7 +130,11 @@
     main { grid-template-columns: minmax(0, 1fr); }
     .naamplaat { padding-inline: 2px; }
   }
-  @media (prefers-reduced-motion: reduce) { .sprite, .denkt { animation: none !important; } }
+  @media (prefers-reduced-motion: reduce) {
+    .zitplaats, .sprite, .vlam, .torengloed, .torenring, .denkt { animation: none !important; }
+    .vlam, .torengloed { opacity: .3; }
+    .torenring { display: none; }
+  }
   .ronde { margin: 18px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--zacht); }
   .beurt { background: var(--paneel); border: 1px solid var(--lijn); border-left: 4px solid var(--kleur); border-radius: 10px; padding: 10px 14px; margin: 8px 0; }
   .beurt .wie { font-weight: 650; color: var(--kleur); font-size: 14px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
@@ -126,11 +180,22 @@
 <figure class="kamer">
   <div class="toneel">
     <img class="zaal" src="council-chamber.png" alt="Bovenaanzicht in pixelkunst van de raadszaal van Achrona.">
+    <div class="zaallicht" aria-hidden="true">
+      <span class="torengloed"></span><span class="torenring"></span>
+      <span class="vlam" style="--licht-x:20.4%;--licht-y:20.1%;--licht-start:-.2s"></span>
+      <span class="vlam" style="--licht-x:25.6%;--licht-y:18.4%;--licht-start:-1.3s"></span>
+      <span class="vlam" style="--licht-x:36.6%;--licht-y:18.6%;--licht-start:-.8s"></span>
+      <span class="vlam" style="--licht-x:63.4%;--licht-y:18.6%;--licht-start:-1.8s"></span>
+      <span class="vlam" style="--licht-x:74.5%;--licht-y:18.4%;--licht-start:-.4s"></span>
+      <span class="vlam" style="--licht-x:79.6%;--licht-y:20.1%;--licht-start:-1.1s"></span>
+      <span class="vlam" style="--licht-x:4.3%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-.6s"></span>
+      <span class="vlam" style="--licht-x:95.6%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-2s"></span>
+    </div>
     <ul class="raadskaart" aria-label="Zitplaatsen van de Raad">
       <li class="zitplaats" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:28%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Beast Master</span></li>
-      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Engineer</span></li>
-      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Koning</span></li>
-      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Oracle</span></li>
+      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%;--wandel-start:-36s;--wandel-eerst:88%;--wandel-laatst:12%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Engineer</span></li>
+      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%;--wandel-start:-72s"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Koning</span></li>
+      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%;--wandel-start:-108s;--wandel-eerst:88%;--wandel-laatst:12%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Oracle</span></li>
     </ul>
   </div>
 </figure>
