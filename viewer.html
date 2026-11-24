@@ -30,8 +30,15 @@
       conic-gradient(from 180deg at 1px 50%, transparent 90deg, #293441 0 180deg, transparent 0) 28px 0 / 56px 36px,
       #171e29;
   }
-  header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; padding: 28px 0 18px; }
-  .bediening { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  header {
+    display: grid; grid-template-columns: minmax(12px, 1fr) auto minmax(12px, 1fr);
+    gap: clamp(8px, 2vw, 22px); align-items: center; padding: 25px 0 17px;
+  }
+  .titelpijl { height: clamp(12px, 2.3vw, 27px); background: linear-gradient(#f5d692, #af773e 51%, #e2aa57 52%, #7f522e); }
+  .titelpijl.veren { clip-path: polygon(0 8%, 20% 8%, 33% 44%, 100% 44%, 100% 59%, 33% 59%, 20% 93%, 0 93%, 13% 53%); }
+  .titelpijl.punt { clip-path: polygon(0 44%, 76% 44%, 76% 10%, 100% 51%, 76% 91%, 76% 59%, 0 59%); }
+  .zaalbediening { display: flex; justify-content: center; padding: 15px 0 22px; }
+  .pitchlink { font: 600 14px var(--pixel); color: var(--koning); }
   button {
     --schild: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 66%, 85% 86%, 50% 100%, 15% 86%, 0 66%);
     position: relative; isolation: isolate; cursor: pointer; border: 0; background: none; color: #fff1d9;
@@ -44,12 +51,9 @@
   button:focus-visible, #debat:focus-visible { outline: 2px solid var(--koning); outline-offset: 3px; }
   .dossier { position: fixed; inset: 0 0 0 auto; margin: 0; height: 100%; max-height: none; width: min(850px, 100%); max-width: none; border: 0; border-left: 1px solid var(--lijn); color: var(--tekst); background: var(--bg); padding: 0 18px 18px; overflow: auto; }
   .dossier::backdrop { background: #080a0bb3; }
-  .dossierkop { position: sticky; top: 0; display: flex; gap: 12px; align-items: center; justify-content: space-between; background: var(--bg); border-bottom: 1px solid var(--lijn); padding: 14px 0 10px; margin-bottom: 12px; z-index: 1; }
+  .dossierkop { position: sticky; top: 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: var(--bg); border-bottom: 1px solid var(--lijn); padding: 14px 0 10px; margin-bottom: 12px; z-index: 1; }
   .dossierkop h2 { font: 600 24px var(--pixel); margin: 0; }
-  header h1 { font: 700 clamp(30px, 4.7vw, 48px)/1 var(--pixel); margin: 0; text-shadow: 2px 3px #080a11; }
-  .pil { font: 600 15px/1.25 var(--pixel); padding: 2px 10px; border-radius: 999px; border: 1px solid var(--lijn); background: var(--paneel); }
-  .pil.bezig { border-color: var(--waarschuwing); color: var(--waarschuwing); }
-  .pil.klaar { border-color: var(--ok); color: var(--ok); }
+  header h1 { font: 700 clamp(21px, 4.7vw, 48px)/1 var(--pixel); margin: 0; text-align: center; text-shadow: 2px 3px #080a11; }
   .runid { color: var(--zacht); font-size: 12px; font-family: ui-monospace, monospace; word-break: break-all; }
   .pagina { width: min(1580px, calc(100% - 40px), calc(max(400px, 100svh - 238px) * 1.78)); margin: 0 auto; }
   .kamer { margin: 0 auto; border: 1px solid #534534; border-radius: 12px; overflow: hidden; background: #1a1717; }
@@ -92,7 +96,9 @@
   }
   .raadskaart { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
   .zitplaats { position: absolute; left: var(--x); top: var(--y); translate: -50% -100%; width: 8.5%; text-align: center; color: var(--rolkleur); }
-  .sprite { position: relative; display: block; aspect-ratio: .5; background: url(council-cast.png) var(--frame) 50% / 400% 100% no-repeat; image-rendering: pixelated; }
+  .sprite { position: relative; display: block; aspect-ratio: .5; background: var(--atlas, url(council-cast.png)) var(--frame) 50% / var(--atlas-breedte, 400%) 100% no-repeat; image-rendering: pixelated; }
+  .nieuw-raadslid { --atlas: url(council-extra-cast.png); --atlas-breedte: 300%; }
+  .nieuw-raadslid .naamplaat { top: 94%; }
   .zitplaats.spreekt { z-index: 2; }
   .spreekwolk {
     position: absolute; z-index: 4; left: 50%; bottom: 91%; translate: -50% 0;
@@ -101,7 +107,9 @@
     font: 600 clamp(12px, 1.4vw, 17px)/1.13 var(--pixel); overflow-wrap: anywhere;
     animation: wolk-in 180ms ease-out;
   }
-  .spreekwolk::after { content: ""; position: absolute; left: calc(50% - 6px); bottom: -7px; width: 10px; height: 10px; rotate: 45deg; border: solid #57445b; border-width: 0 2px 2px 0; background: #fff0cf; }
+  .zijplaats.links .spreekwolk { translate: -24% 0; --staart-x: 24%; }
+  .zijplaats.rechts .spreekwolk { translate: -76% 0; --staart-x: 76%; }
+  .spreekwolk::after { content: ""; position: absolute; left: calc(var(--staart-x, 50%) - 6px); bottom: -7px; width: 10px; height: 10px; rotate: 45deg; border: solid #57445b; border-width: 0 2px 2px 0; background: #fff0cf; }
   .spreekwolk small { display: block; margin-top: 4px; color: #563c6b; font-size: .84em; }
   @keyframes wolk-in { from { opacity: 0; transform: translateY(4px) scale(.96); } to { opacity: 1; transform: none; } }
   .naamplaat { position: absolute; top: 89%; left: 50%; translate: -50% 0; background: #141416e8; border: 1px solid #80705a; border-radius: 3px; padding: 1px 5px; font: 600 clamp(9px, 1.25vw, 15px)/1.25 var(--pixel); white-space: nowrap; }
@@ -158,10 +166,6 @@
     from { clip-path: inset(48% 0); opacity: .65; }
     to { clip-path: inset(0 -20% -50%); opacity: 1; }
   }
-  .keuze { background: var(--paneel); border: 1px solid var(--lijn); border-left: 3px solid var(--koning); border-radius: 8px; margin: 14px 0 22px; padding: 12px 15px; }
-  .keuze p { margin: 0; overflow-wrap: anywhere; }
-  #kamer-vraag:not(:empty) { margin-top: 4px; }
-  #kamer-reden:not(:empty) { margin-top: 4px; font-size: 13px; color: var(--zacht); }
   main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 32%); gap: 18px; }
   .debatkop { margin: 0 0 7px; font: 600 23px var(--pixel); }
   #debat { max-height: 68vh; overflow: auto; overscroll-behavior: contain; }
@@ -210,15 +214,13 @@
 <body>
 <div class="pagina">
 <header>
+  <span class="titelpijl veren" aria-hidden="true"></span>
   <h1>Council of Achrona</h1>
-  <div class="bediening">
-    <span id="status" class="pil" translate="no">Wachten</span>
-    <button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>
-  </div>
+  <span class="titelpijl punt" aria-hidden="true"></span>
 </header>
 <figure class="kamer">
   <div class="toneel">
-    <img class="zaal" src="council-chamber.png" alt="Bovenaanzicht in pixelkunst van de raadszaal van Achrona.">
+    <img class="zaal" src="council-chamber.png" alt="Raadszaal van Achrona in pixelkunst.">
     <div class="zaallicht" aria-hidden="true">
       <span class="torengloed"></span><span class="torenring"></span>
       <span class="vlam" style="--licht-x:20.4%;--licht-y:20.1%;--licht-start:-.2s"></span>
@@ -231,17 +233,18 @@
       <span class="vlam" style="--licht-x:95.6%;--licht-y:79.5%;--licht-breedte:13%;--licht-hoogte:25%;--licht-start:-2s"></span>
     </div>
     <ul class="raadskaart" aria-label="Zitplaatsen van de Raad">
-      <li class="zitplaats" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:28%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Beast Master</span></li>
-      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:42%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Engineer</span></li>
-      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:57%;--y:50%;--frame:66.667%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Koning</span><button id="open-verdictrol" class="koningsrol" type="button" aria-haspopup="dialog" aria-label="Open de verdictrol" title="Open de verdictrol" hidden><span class="rol-greep" aria-hidden="true"></span></button></li>
-      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:72%;--y:50%;--frame:100%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Oracle</span></li>
+      <li class="zitplaats nieuw-raadslid" data-rol="archmage" style="--rolkleur:var(--archmage);--x:26%;--y:50%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Archmage</span></li>
+      <li class="zitplaats" data-rol="engineer" style="--rolkleur:var(--engineer);--x:38%;--y:50%;--frame:33.333%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Engineer</span></li>
+      <li class="zitplaats" data-rol="koning" style="--rolkleur:var(--koning);--x:50%;--y:50%;--frame:66.667%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Koning</span><button id="open-verdictrol" class="koningsrol" type="button" aria-haspopup="dialog" aria-label="Open de verdictrol" title="Open de verdictrol" hidden><span class="rol-greep" aria-hidden="true"></span></button></li>
+      <li class="zitplaats" data-rol="oracle" style="--rolkleur:var(--oracle);--x:62%;--y:50%;--frame:100%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Oracle</span></li>
+      <li class="zitplaats nieuw-raadslid" data-rol="historian" style="--rolkleur:var(--historian);--x:74%;--y:50%;--frame:50%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Historian</span></li>
+      <li class="zitplaats zijplaats links" data-rol="beast_master" style="--rolkleur:var(--beast_master);--x:12%;--y:65%;--frame:0%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Beast Master</span></li>
+      <li class="zitplaats nieuw-raadslid zijplaats rechts" data-rol="guardian_keeper" style="--rolkleur:var(--guardian_keeper);--x:88%;--y:65%;--frame:100%"><span class="sprite" aria-hidden="true"></span><span class="naamplaat">Guardian Keeper</span></li>
     </ul>
   </div>
 </figure>
-<div class="keuze" aria-live="polite">
-  <p><strong id="kamer-status">De Raad wacht op de eerste beurt.</strong></p>
-  <p id="kamer-vraag"></p>
-  <p id="kamer-reden"></p>
+<div class="zaalbediening">
+  <button id="open-dossier" type="button" aria-haspopup="dialog">Debat en verdict</button>
 </div>
 <dialog id="verdictrol" class="perkament" aria-labelledby="verdictrol-titel">
   <div class="perkamentkop">
@@ -253,6 +256,7 @@
 <dialog id="dossier" class="dossier" aria-labelledby="dossier-titel">
   <div class="dossierkop">
     <h2 id="dossier-titel">Raadsdossier</h2>
+    <a class="pitchlink" href="/pitch">Open bewijsweergave</a>
     <form method="dialog"><button type="submit">Sluiten</button></form>
   </div>
 <main>
@@ -315,13 +319,6 @@ function renderKamer(trace, beurten, bezig) {
     koning.classList.add("wijst");
   }
   vorigeKeuze = keuzeId;
-
-  const spreker = NAMEN[actief] || actief;
-  document.getElementById("kamer-status").textContent = spreker
-    ? actief === "koning" ? "De Koning stelt het verdict op." : spreker + " is aan het woord."
-    : bezig ? "De Raad bereidt het debat voor." : "De Raad heeft het debat afgerond.";
-  document.getElementById("kamer-vraag").textContent = keuze?.aan && keuze.vraag ? `${NAMEN[keuze.spreker] || keuze.spreker} → ${NAMEN[keuze.aan] || keuze.aan} · ${keuze.vraag}` : "";
-  document.getElementById("kamer-reden").textContent = keuze?.reden ? "Waarom: " + keuze.reden : "";
 }
 
 let wolkRun;
@@ -338,7 +335,7 @@ function toonSpreekwolk(beurt) {
   const plek = plaatsen.find(plaats => plaats.dataset.rol === beurt.spreker);
   if (!plek) return;
   const tekst = (beurt.soort === "routering" ? beurt.vraag : beurt.tekst) || "";
-  const regel = tekst.replace(/[*#`]/g, "").replace(/^\s*(?:Koning|Engineer|Oracle|Beast Master):\s*/i, "")
+  const regel = tekst.replace(/[*#`]/g, "").replace(/^\s*(?:Koning|Engineer|Oracle|Beast Master|Archmage|Guardian Keeper|Historian):\s*/i, "")
     .trim().split(/(?<=[.!?])\s+|\n/)[0];
   if (!regel) return;
   const woorden = regel.split(/\s+/);
@@ -385,10 +382,7 @@ function planSpreekwolk(trace, beurten, bezig) {
 }
 
 function render(trace, verdict) {
-  const status = document.getElementById("status");
   const bezig = trace.status === "bezig";
-  status.className = "pil " + (bezig ? "bezig" : "klaar");
-  status.textContent = bezig ? "Bezig" : "Afgerond";
   document.getElementById("runid").textContent = trace.run_id || "";
 
   // Debat per ronde

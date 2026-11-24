@@ -23,7 +23,13 @@ def main():
             pad = self.path.split("?")[0]
             if pad in ("/", "/index.html"):
                 return self.stuur(ROOT / "viewer.html", "text/html; charset=utf-8")
-            if pad in ("/council-chamber.png", "/council-cast.png", "/verdict-parchment.png"):
+            if pad == "/pitch":
+                return self.stuur(ROOT / "pitch.html", "text/html; charset=utf-8")
+            if pad == "/viewer.js":
+                return self.stuur(ROOT / "viewer.js", "text/javascript; charset=utf-8")
+            if pad == "/viewer.css":
+                return self.stuur(ROOT / "viewer.css", "text/css; charset=utf-8")
+            if pad in ("/council-chamber.png", "/council-cast.png", "/council-extra-cast.png", "/verdict-parchment.png"):
                 return self.stuur(ROOT / "assets" / pad[1:], "image/png")
             if pad == "/assets/pixelify-sans.ttf":
                 return self.stuur(ROOT / pad[1:], "font/ttf")
@@ -46,7 +52,7 @@ def main():
             pass
 
     server = http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    url = f"http://127.0.0.1:{port}/"
+    url = f"http://127.0.0.1:{server.server_port}/"
     print(f"Debatviewer op {url} (leest {map_}). Stop met Ctrl+C.")
     webbrowser.open(url)
     try:

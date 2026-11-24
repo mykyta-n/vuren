@@ -1,4 +1,4 @@
-"""Elk bestand in deze map is één Raadslid. Volgorde in het debat = alfabetische bestandsnaam."""
+"""Laad één Raadslid per module in deze map."""
 import importlib
 import pkgutil
 
