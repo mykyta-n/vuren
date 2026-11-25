@@ -167,10 +167,6 @@ Drie criteria, elk 0–10: **Verdict** (40%), **Council** (40%: hoe goed orchest
 - Commit en push `verdict.json` en `trace.json` (in de root, uit dezelfde run) vóór 16:00. Alleen de laatste commit vóór 16:00 telt.
 - Kleine correcties aan `verdict.json` (bv. koppeltekens) mogen; `trace.json` laat je ongewijzigd.
 
-## Bijdragers
-
-- [Dmytro Busha (@m0cken1)](https://github.com/m0cken1) werkte aan de adaptieve routering, broncontrole en de inzendrun.
-
 ## Licentie
 
 MIT, zie `LICENSE`.
