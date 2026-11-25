@@ -1,10 +1,26 @@
-# Council of Achrona: Starter kit
+# Vuren — Council of Achrona
 
-Starter kit voor challenge 113 van Hack The Future 2026, aangeboden door Roboest.
+Onze inzending voor **Hack The Future 2026, challenge 113** van Roboest. Elk van de zes specialistische AI-agenten kan zijn eigen kennisbron raadplegen. De Koning kiest per beurt een raadslid en een vraag. Hij bundelt hun antwoorden in het verdict.
 
-De Desync heeft de herinneringen en systemen van Achrona versnipperd. Jullie bouwen een **Council**: een zwerm van samenwerkende AI-agenten (Raadsleden) die elk één Rol vertolken, debatteren, verspreide kennis analyseren en samen tot een **Council Verdict** komen: wat is de oorzaak, wat is het herstelplan, welke risico's zijn er.
+## Eindresultaat
 
-Deze kit geeft jullie binnen het eerste halfuur een draaiende mini-Council die je live in je browser ziet debatteren. Het echte werk is aan jullie: de **Koning** het debat laten leiden. Hij beslist welk Raadslid spreekt, met welke vraag en waarom. (In AI-termen heet dat deel een orchestrator.)
+In onze einddemo volg je het opgenomen debat van de Koning en zijn raadsleden. Na zeven beurten vergelijkt het verdict twee onafhankelijke meldingen bij de oostpoort op dag 22 om 04:15. Het netwerklogboek meldt drie minuten pakketverlies en de wacht meldt een schildopening van binnenuit van dezelfde duur. Een timingverschil blijft een hypothese. De Raad adviseert de kloktikken te controleren, eerst een kopie van het register te maken en daarna de twee pulsen geleidelijk samen te brengen.
+
+### De raadszaal
+
+![De Koning stelt de Engineer een vraag over de verandering aan het datanet](assets/council-demo.webp)
+
+### Het oordeel van de Raad
+
+![Het verdict toont de bronverwijzingen en de onzekerheid over het mechanisme](assets/council-verdict.webp)
+
+Speel de ingediende run lokaal af zonder modelcalls.
+
+```sh
+python3 viewer.py --demo
+```
+
+Open [de demoviewer](http://127.0.0.1:8104/) en klik op **Start debat**. Bekijk ook het [ingediende verdict](verdict.json) en de [volledige debattrace](trace.json).
 
 ## Wat je krijgt op de dag
 
